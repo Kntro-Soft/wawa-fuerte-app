@@ -23,7 +23,7 @@ import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
 import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
-import 'core/rag/fake_recipe_retriever.dart';
+import 'core/rag/ins_recipe_retriever.dart';
 import 'core/settings/caregiver_repository.dart';
 import 'core/storage/database.dart';
 import 'core/storage/sqlite_repositories.dart';
@@ -49,7 +49,7 @@ Future<void> main() async {
   final profiles = SqliteProfileRepository(database);
   final plans = SqlitePlanRepository(database);
   final caregivers = SqliteCaregiverRepository(database);
-  final retriever = FakeRecipeRetriever();
+  final retriever = InsRecipeRetriever();
 
   await retriever.load();
   final registered = await profiles.findAll();

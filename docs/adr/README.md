@@ -23,6 +23,7 @@ one (and update the old one's status).
 | [0011](./0011-ins-recipe-data-provenance.md)               | INS recipe data provenance                        | Accepted |
 | [0012](./0012-iron-requirement-tables.md)                  | Iron requirement tables from INS/FAO-WHO          | Accepted |
 | [0013](./0013-local-persistence-schema.md)                 | Local persistence schema for profiles and plans   | Accepted |
+| [0014](./0014-free-text-ingredients-and-application-level-function-calling.md) | Free-text ingredients and application-level function calling | Accepted |
 
 ## Template
 

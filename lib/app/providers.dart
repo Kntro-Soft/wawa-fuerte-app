@@ -7,16 +7,14 @@
 /// and the bug shows up as a screen reading the wrong instance. Keeping the
 /// whole graph here makes that impossible to do by accident.
 ///
-/// Everything below is currently a **fake or in-memory implementation**. That is
-/// the working agreement in `AGENTS.md`, not a shortcut: real Gemma inference
-/// needs a physical Android handset (ADR-0003, ADR-0004), so the UI is built and
-/// demoed against `FakeInferenceService` and `FakeRecipeRetriever`. Swapping in
-/// the real ones is an edit to this file and nothing else.
-///
-/// `TableIronCalculator` is the one exception — it is the **real** implementation
-/// everywhere, including in tests. Its numbers are the published INS/FAO-WHO
-/// figures (ADR-0012), and faking the one clinically meaningful calculation in
-/// the app would defeat the point of having sourced it.
+/// Real by default: [InsRecipeRetriever] reads the bundled INS corpus
+/// (ADR-0011) and [TableIronCalculator] uses the published INS/FAO-WHO figures
+/// (ADR-0012) — faking the clinically meaningful parts would defeat the point
+/// of having sourced them. Inference stays behind [defaultInferenceService]:
+/// real Gemma needs its `.litertlm` checkpoint, which is never committed
+/// (ADR-0004), so it only activates when `GEMMA_MODEL_PATH` is supplied and
+/// falls back to `FakeInferenceService` otherwise — the reason `flutter test`
+/// and any developer without the 557 MB file still get a running app.
 library;
 
 import 'package:flutter/material.dart';
@@ -28,7 +26,7 @@ import '../core/inference/gemma_inference_service.dart';
 import '../core/inference/inference_service.dart';
 import '../core/nutrition/iron_calculator.dart';
 import '../core/nutrition/table_iron_calculator.dart';
-import '../core/rag/fake_recipe_retriever.dart';
+import '../core/rag/ins_recipe_retriever.dart';
 import '../core/rag/recipe_retriever.dart';
 import '../core/rag/simple_plan_parser.dart';
 import '../core/settings/caregiver_repository.dart';
@@ -65,7 +63,7 @@ class AppProviders extends StatelessWidget {
     final profileRepository = profiles ?? InMemoryProfileRepository();
     final planRepository = plans ?? InMemoryPlanRepository();
     final caregiverRepository = caregivers ?? InMemoryCaregiverRepository();
-    final recipeRetriever = retriever ?? FakeRecipeRetriever();
+    final recipeRetriever = retriever ?? InsRecipeRetriever();
     final inferenceService = inference ?? defaultInferenceService();
     final planParser = parser ?? const SimplePlanParser();
     const calculator = TableIronCalculator();
