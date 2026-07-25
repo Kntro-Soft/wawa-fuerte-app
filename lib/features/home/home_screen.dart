@@ -66,7 +66,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Wawa Fuerte')),
+      appBar: AppBar(
+        title: const Text('Wawa Fuerte'),
+        actions: [
+          IconButton(
+            onPressed: _changeCaregiverName,
+            icon: const Icon(LucideIcons.userPen600),
+            tooltip: 'Cambiar mi nombre',
+          ),
+        ],
+      ),
       body: SafeArea(
         child: controller.isLoading
             ? const Center(child: CircularProgressIndicator())
