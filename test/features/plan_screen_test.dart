@@ -13,6 +13,7 @@ import 'package:wawafuerte/core/domain/weekly_plan.dart';
 import 'package:wawafuerte/core/theme/app_colors.dart';
 import 'package:wawafuerte/core/widgets/iron_coverage_bar.dart';
 import 'package:wawafuerte/features/plan/plan_controller.dart';
+import 'package:wawafuerte/features/plan/widgets/plan_generating_view.dart';
 import 'package:wawafuerte/features/plan/widgets/recipe_row.dart';
 
 import '../support/pump_app.dart';
@@ -428,6 +429,34 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 50));
       expect(find.text('El menú de Rosita'), findsOneWidget);
+    });
+
+    testWidgets('the waiting copy keeps her company without promising an end', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: PlanGeneratingView(childName: 'Rosita')),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(PlanGeneratingView.messages.first), findsOneWidget);
+
+      // The line changes on a timer, so a wait of tens of seconds is not tens
+      // of seconds of the same sentence.
+      await tester.pump(PlanGeneratingView.messageInterval);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text(PlanGeneratingView.messages[1]), findsOneWidget);
+
+      // But it never narrates progress it cannot know. These lines run on a
+      // Timer, not on the model: "ya casi" to someone with forty seconds left
+      // is a promise the app cannot keep.
+      for (final message in PlanGeneratingView.messages) {
+        expect(message.toLowerCase(), isNot(contains('ya casi')));
+        expect(message.toLowerCase(), isNot(contains('falta poco')));
+        expect(message, isNot(contains('%')));
+      }
     });
   });
 }
