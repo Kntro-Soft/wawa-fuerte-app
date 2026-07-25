@@ -34,7 +34,22 @@ app possible.
 | [flutter_gemma](https://pub.dev/packages/flutter_gemma)                 | On-device Gemma inference from Flutter                |
 | [MediaPipe LLM Inference API](https://ai.google.dev/edge/mediapipe)     | Native on-device model execution                      |
 | [SQLite](https://www.sqlite.org)                                        | Local persistence and embedding storage (as BLOBs)    |
+| [Provider](https://pub.dev/packages/provider)                           | State management (ADR-0009)                           |
+| [wakelock_plus](https://pub.dev/packages/wakelock_plus)                 | Keeping the screen awake during on-device generation  |
+| [flutter_tts](https://pub.dev/packages/flutter_tts)                     | Reading recipe steps aloud                            |
 | [Lefthook](https://github.com/evilmartians/lefthook)                    | Pre-commit formatting hook                            |
+
+## Typeface and Icons
+
+- **[Lexend](https://www.lexend.com/)** — Bonnie Shaver-Troup, Thomas Jockin, Santiago Orozco and
+  contributors. Lexend was developed around research on reading proficiency, which is why it is the
+  only typeface in this app: a share of the caregivers we are designing for read slowly, and the
+  typeface is doing accessibility work, not decoration. Four weights are bundled with the app rather
+  than fetched, because there is no network on the target device (ADR-0002). Licensed under the
+  [SIL Open Font License 1.1](https://openfontlicense.org/).
+- **[Lucide](https://lucide.dev/)** — Community fork of Feather Icons, used through
+  [lucide_icons_flutter](https://pub.dev/packages/lucide_icons_flutter). Licensed under the ISC
+  License. Every icon in the app is paired with a text label, so the set carries no meaning alone.
 
 ## Reference Methodologies
 

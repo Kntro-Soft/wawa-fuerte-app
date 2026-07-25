@@ -40,6 +40,23 @@ dependencies:
   sqflite: ^2.4.2
   path: ^1.9.1
 
+  # State management (ADR-0009). Chosen for the smallest API surface, so four
+  # developers converge on one idiom inside a six-hour sprint.
+  provider: ^6.1.2
+
+  # Outline icon set (MIT). Every icon in this app is paired with a text label,
+  # so the set only has to be legible, not self-explanatory.
+  lucide_icons_flutter: ^3.1.15
+
+  # Keeps the screen awake while Gemma generates. On a low-end phone that takes
+  # tens of seconds; a screen that sleeps mid-generation reads as a crash.
+  wakelock_plus: ^1.2.8
+
+  # Reads the preparation steps aloud. This is the core accessibility feature:
+  # a caregiver with wet hands, or one who does not read fluently, listens
+  # instead of reading.
+  flutter_tts: ^4.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -71,6 +88,29 @@ flutter:
   # which is git-ignored and deliberately NOT listed here.
   assets:
     - assets/data/
+
+  # Lexend, BUNDLED — never fetched.
+  #
+  # This started as `google_fonts`, which downloads the .ttf at first paint and
+  # caches it. That is wrong for this app in a way that would not have shown up
+  # on a developer's laptop: there is no network on the target device (ADR-0002),
+  # so the fetch always fails and Flutter silently falls back to the system font.
+  # The whole reason for choosing Lexend — legibility for a caregiver who reads
+  # slowly — would have been lost, quietly, on exactly the phones it was chosen
+  # for. Four weights, ~280 KB total, shipped in the APK.
+  #
+  # Lexend is licensed under the SIL Open Font License 1.1.
+  fonts:
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lexend-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lexend-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Lexend-Bold.ttf
+          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
