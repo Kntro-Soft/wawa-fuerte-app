@@ -5,7 +5,7 @@ on:
   push:
     branches: [main, develop]
 
-# Cancela runs viejos cuando pusheas dos veces seguidas (constante en un sprint)
+# Cancel stale runs when you push twice in a row (constant during a sprint)
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
