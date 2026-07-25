@@ -1,12 +1,12 @@
-## Qué cambia
+## What changes
 
 
-## Área
+## Area
 <!-- inference | rag | nutrition | storage | onboarding | home | plan | ci -->
 
 
 ## Checklist
-- [ ] `flutter analyze` sin issues
-- [ ] Corre sin crash (simulador o iPhone)
-- [ ] No commiteé el modelo `.task` ni archivos > 50 MB
-- [ ] Solo toqué mi área (o avisé en el chat si toqué `core/` compartido)
+- [ ] `flutter analyze` reports no issues
+- [ ] Runs without crashing (simulator or iPhone)
+- [ ] I did not commit the `.task` model or any file > 50 MB
+- [ ] I only touched my own area (or flagged it in the chat if I touched shared `core/`)
