@@ -21,6 +21,7 @@ one (and update the old one's status).
 | [0009](./0009-state-management.md)                         | State management library                          | Proposed |
 | [0010](./0010-macos-as-development-target.md)              | macOS as a development-only target                | Accepted |
 | [0012](./0012-iron-requirement-tables.md)                  | Iron requirement tables from INS/FAO-WHO          | Accepted |
+| [0013](./0013-local-persistence-schema.md)                 | Local persistence schema for profiles and plans   | Accepted |
 
 ## Template
 
