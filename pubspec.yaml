@@ -44,11 +44,6 @@ dependencies:
   # developers converge on one idiom inside a six-hour sprint.
   provider: ^6.1.2
 
-  # Lexend, loaded through google_fonts. Lexend was designed against reading
-  # -proficiency research and is the single family used across the whole app;
-  # our users may read slowly and some of them may barely read at all.
-  google_fonts: ^6.2.1
-
   # Outline icon set (MIT). Every icon in this app is paired with a text label,
   # so the set only has to be legible, not self-explanatory.
   lucide_icons_flutter: ^3.1.15
@@ -88,10 +83,28 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Lexend, BUNDLED — never fetched.
+  #
+  # This started as `google_fonts`, which downloads the .ttf at first paint and
+  # caches it. That is wrong for this app in a way that would not have shown up
+  # on a developer's laptop: there is no network on the target device (ADR-0002),
+  # so the fetch always fails and Flutter silently falls back to the system font.
+  # The whole reason for choosing Lexend — legibility for a caregiver who reads
+  # slowly — would have been lost, quietly, on exactly the phones it was chosen
+  # for. Four weights, ~280 KB total, shipped in the APK.
+  #
+  # Lexend is licensed under the SIL Open Font License 1.1.
+  fonts:
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lexend-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lexend-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Lexend-Bold.ttf
+          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

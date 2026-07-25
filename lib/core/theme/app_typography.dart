@@ -7,6 +7,13 @@
 /// optical sizes, and — the reason it matters here — the app's reader may be
 /// decoding words letter by letter rather than recognising them whole.
 ///
+/// The four weights are **bundled as assets**, not pulled through `google_fonts`.
+/// That package downloads the face on first paint, and this app has no network
+/// (ADR-0002): the fetch would fail on every real device and Flutter would fall
+/// back to the system font without saying anything. The typography decision
+/// would have evaporated precisely on the low-end phones it was made for. See
+/// the `fonts:` block in `pubspec.yaml`.
+///
 /// Hard rules, enforced by every constant below:
 ///
 /// - **Nothing below 15 sp.** The body default is 18 sp, not Material's 14 sp.
@@ -22,11 +29,13 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
 abstract final class AppTypography {
+  /// The one family in the app. Declared in `pubspec.yaml`.
+  static const String fontFamily = 'Lexend';
+
   /// Line height for headings. Tight enough to hold a title together as one
   /// object, loose enough for Lexend's tall x-height.
   static const double _headingHeight = 1.2;
@@ -38,69 +47,67 @@ abstract final class AppTypography {
   static TextTheme textTheme() {
     const color = AppColors.onSurface;
 
-    return GoogleFonts.lexendTextTheme(
-      const TextTheme(
-        // Wordmark and the single biggest number on a screen.
-        displayLarge: TextStyle(
-          fontSize: 44,
-          fontWeight: FontWeight.w700,
-          height: _headingHeight,
-          color: color,
-        ),
-        // Screen titles.
-        headlineLarge: TextStyle(
-          fontSize: 30,
-          fontWeight: FontWeight.w700,
-          height: _headingHeight,
-          color: color,
-        ),
-        // Section questions inside the onboarding scroll.
-        headlineSmall: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          height: _headingHeight,
-          color: color,
-        ),
-        // Recipe names and card titles. Never truncated — see RecipeRow.
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          height: _headingHeight,
-          color: color,
-        ),
-        // The default. Everything that is not explicitly something else.
-        bodyLarge: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w400,
-          height: _bodyHeight,
-          color: color,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w400,
-          height: _bodyHeight,
-          color: color,
-        ),
-        // Button and icon-pair labels. As large as a card title: a label the
-        // user must hit is not less important than the text next to it.
-        labelLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          height: _headingHeight,
-          // Zeroed on purpose: Material's default spacing exists for uppercase
-          // buttons, which this app does not have.
-          letterSpacing: 0,
-          color: color,
-        ),
-        // The floor. Captions, helper text, units. 15 sp / weight 500 — the
-        // extra weight compensates for the smaller size outdoors.
-        bodySmall: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          height: _bodyHeight,
-          color: AppColors.onSurfaceVariant,
-        ),
+    return const TextTheme(
+      // Wordmark and the single biggest number on a screen.
+      displayLarge: TextStyle(
+        fontSize: 44,
+        fontWeight: FontWeight.w700,
+        height: _headingHeight,
+        color: color,
       ),
-    );
+      // Screen titles.
+      headlineLarge: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
+        height: _headingHeight,
+        color: color,
+      ),
+      // Section questions inside the onboarding scroll.
+      headlineSmall: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        height: _headingHeight,
+        color: color,
+      ),
+      // Recipe names and card titles. Never truncated — see RecipeRow.
+      titleLarge: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        height: _headingHeight,
+        color: color,
+      ),
+      // The default. Everything that is not explicitly something else.
+      bodyLarge: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+        height: _bodyHeight,
+        color: color,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+        height: _bodyHeight,
+        color: color,
+      ),
+      // Button and icon-pair labels. As large as a card title: a label the
+      // user must hit is not less important than the text next to it.
+      labelLarge: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        height: _headingHeight,
+        // Zeroed on purpose: Material's default spacing exists for uppercase
+        // buttons, which this app does not have.
+        letterSpacing: 0,
+        color: color,
+      ),
+      // The floor. Captions, helper text, units. 15 sp / weight 500 — the
+      // extra weight compensates for the smaller size outdoors.
+      bodySmall: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        height: _bodyHeight,
+        color: AppColors.onSurfaceVariant,
+      ),
+    ).apply(fontFamily: fontFamily);
   }
 }

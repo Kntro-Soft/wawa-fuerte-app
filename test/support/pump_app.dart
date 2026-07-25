@@ -8,7 +8,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:wawafuerte/app/app.dart';
 import 'package:wawafuerte/app/providers.dart';
 import 'package:wawafuerte/app/routes.dart';
@@ -17,15 +16,13 @@ import 'package:wawafuerte/core/inference/fake_inference_service.dart';
 import 'package:wawafuerte/core/rag/fake_recipe_retriever.dart';
 import 'package:wawafuerte/core/storage/in_memory_repositories.dart';
 
-/// Call once per test file, before pumping.
+/// Kept as a no-op hook, called from every test file's `setUpAll`.
 ///
-/// `google_fonts` otherwise tries to download Lexend over HTTP, which fails in
-/// the test sandbox. Disabling runtime fetching makes it fall back to the
-/// bundled default face; metrics differ slightly from production, which is
-/// irrelevant to what these tests assert.
-void configureFontsForTest() {
-  GoogleFonts.config.allowRuntimeFetching = false;
-}
+/// It used to disable `google_fonts`' runtime HTTP fetch. Lexend is now bundled
+/// as an asset, so there is nothing to disable — but the seam stays, because
+/// font loading is exactly the kind of thing that grows a setup step again, and
+/// a hook that already exists is cheaper than retrofitting one into six files.
+void configureFontsForTest() {}
 
 /// Boots the app at [initialRoute] with in-memory storage and the fakes.
 ///
