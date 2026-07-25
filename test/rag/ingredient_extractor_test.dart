@@ -15,6 +15,12 @@ class _ScriptedInference implements InferenceService {
   bool get isReady => true;
 
   @override
+  bool get isDownloading => false;
+
+  @override
+  int? get downloadProgress => null;
+
+  @override
   ActiveInferenceMode get activeMode => ActiveInferenceMode.demo;
 
   @override

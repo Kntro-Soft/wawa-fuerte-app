@@ -31,6 +31,12 @@ abstract interface class InferenceService {
   /// Whether the model is loaded and can serve a request.
   bool get isReady;
 
+  /// Whether the model weights are currently downloading.
+  bool get isDownloading;
+
+  /// Download progress from 0 to 100 if downloading, null otherwise.
+  int? get downloadProgress;
+
   /// The active execution mode (cloud, gemma, or demo).
   ActiveInferenceMode get activeMode;
 

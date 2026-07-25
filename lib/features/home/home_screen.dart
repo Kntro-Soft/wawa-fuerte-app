@@ -37,8 +37,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/andean_band.dart';
 import '../../core/widgets/empty_state.dart';
-import '../../core/inference/inference_service.dart';
-import '../../core/widgets/notice_banner.dart';
 import 'home_controller.dart';
 import 'widgets/caregiver_name_dialog.dart';
 import 'widgets/child_card.dart';
@@ -84,9 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     caregiverName: controller.caregiverName,
                     onChangeName: _changeCaregiverName,
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  const _GemmaModelBanner(),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xl),
 
                   if (controller.isEmpty)
                     // Home's empty state. Says what is missing, that it is
@@ -298,58 +294,5 @@ class _GreetingHeader extends StatelessWidget {
         const AndeanBand(),
       ],
     );
-  }
-}
-
-/// Banner on Home that informs the caregiver about Gemma SLM status and offline readiness.
-class _GemmaModelBanner extends StatelessWidget {
-  const _GemmaModelBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    final inference = context.watch<InferenceService>();
-    final mode = inference.activeMode;
-
-    if (mode == ActiveInferenceMode.cloud) {
-      return NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '🌐 Conectado a la Nube (Con Wi-Fi / Red)',
-        message:
-            'Generando planes en la nube. Puedes descargar Gemma ahora en tu '
-            'teléfono para que la app siga funcionando si te quedas sin internet.',
-        action: TextButton.icon(
-          onPressed: () => context.read<InferenceService>().warmUp(),
-          icon: const Icon(LucideIcons.download600, size: 18),
-          label: const Text('Descargar Gemma (Offline)'),
-        ),
-      );
-    }
-
-    if (mode == ActiveInferenceMode.gemma && inference.isReady) {
-      return const NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '🤖 Gemma On-Device Listo (100% Offline)',
-        message:
-            'El modelo Gemma está instalado y listo en tu teléfono. '
-            'Puedes crear menús sin internet ni gasto de datos.',
-      );
-    }
-
-    if (mode == ActiveInferenceMode.gemma && !inference.isReady) {
-      return NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '📥 Instalando Gemma en tu teléfono...',
-        message:
-            'Aprovechando tu conexión para descargar el modelo local. '
-            'Una vez descargado, la app funcionará sin internet.',
-        action: TextButton.icon(
-          onPressed: () => context.read<InferenceService>().warmUp(),
-          icon: const Icon(LucideIcons.download600, size: 18),
-          label: const Text('Descargar modelo ahora'),
-        ),
-      );
-    }
-
-    return const SizedBox.shrink();
   }
 }

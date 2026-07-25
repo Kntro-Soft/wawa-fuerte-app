@@ -33,9 +33,17 @@ class GemmaInferenceService implements InferenceService {
   final PreferredBackend? preferredBackend;
 
   InferenceModel? _model;
+  bool _isDownloading = false;
+  int? _downloadProgress;
 
   @override
   bool get isReady => _model != null;
+
+  @override
+  bool get isDownloading => _isDownloading;
+
+  @override
+  int? get downloadProgress => _downloadProgress;
 
   @override
   ActiveInferenceMode get activeMode => ActiveInferenceMode.gemma;
@@ -48,10 +56,18 @@ class GemmaInferenceService implements InferenceService {
         modelPath.startsWith('http://') || modelPath.startsWith('https://');
 
     if (isNetworkUrl) {
-      await FlutterGemma.installModel(
-        modelType: ModelType.gemmaIt,
-        fileType: ModelFileType.litertlm,
-      ).fromNetwork(modelPath).install();
+      _isDownloading = true;
+      _downloadProgress = 0;
+      try {
+        await FlutterGemma.installModel(
+          modelType: ModelType.gemmaIt,
+          fileType: ModelFileType.litertlm,
+        ).fromNetwork(modelPath).withProgress((progress) {
+          _downloadProgress = progress;
+        }).install();
+      } finally {
+        _isDownloading = false;
+      }
     } else {
       if (!File(modelPath).existsSync()) {
         throw StateError(

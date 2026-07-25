@@ -121,9 +121,6 @@ class _PlanFormState extends State<_PlanForm> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        const _GemmaModelBanner(),
-        const SizedBox(height: AppSpacing.md),
-
         // ADR-0007: no reading is not an error and is never styled as one.
         if (controller.isPreventivePlan) ...[
           const NoticeBanner(
@@ -458,57 +455,5 @@ class _InferenceStatusChip extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
     );
-  }
-}
-
-class _GemmaModelBanner extends StatelessWidget {
-  const _GemmaModelBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    final inference = context.watch<InferenceService>();
-    final mode = inference.activeMode;
-
-    if (mode == ActiveInferenceMode.cloud) {
-      return NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '🌐 Conectado a la Nube (Con Wi-Fi / Red)',
-        message:
-            'Generando planes en la nube. Puedes descargar Gemma ahora en tu '
-            'teléfono para que la app siga funcionando si te quedas sin internet.',
-        action: TextButton.icon(
-          onPressed: () => context.read<InferenceService>().warmUp(),
-          icon: const Icon(LucideIcons.download600, size: 18),
-          label: const Text('Descargar Gemma (Offline)'),
-        ),
-      );
-    }
-
-    if (mode == ActiveInferenceMode.gemma && inference.isReady) {
-      return const NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '🤖 Gemma On-Device Listo (100% Offline)',
-        message:
-            'El modelo Gemma está instalado y listo en tu teléfono. '
-            'Puedes crear menús sin internet ni gasto de datos.',
-      );
-    }
-
-    if (mode == ActiveInferenceMode.gemma && !inference.isReady) {
-      return NoticeBanner(
-        tone: NoticeTone.advice,
-        title: '📥 Instalando Gemma en tu teléfono...',
-        message:
-            'Aprovechando tu conexión para descargar el modelo local. '
-            'Una vez descargado, la app funcionará sin internet.',
-        action: TextButton.icon(
-          onPressed: () => context.read<InferenceService>().warmUp(),
-          icon: const Icon(LucideIcons.download600, size: 18),
-          label: const Text('Descargar modelo ahora'),
-        ),
-      );
-    }
-
-    return const SizedBox.shrink();
   }
 }

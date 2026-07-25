@@ -59,12 +59,22 @@ Future<void> main() async {
   await retriever.load();
   final registered = await profiles.findAll();
 
+  final pipeline = defaultPlanPipeline(
+    qonpania: await _qonpaniaClient(settings, caregivers),
+  );
+
+  // Trigger background model preload/download immediately if connected to internet
+  // so Gemma is fetched automatically on launch.
+  pipeline.inference.warmUp().ignore();
+
   runApp(
     AppProviders(
       profiles: profiles,
       plans: plans,
       caregivers: caregivers,
       retriever: retriever,
+      inference: pipeline.inference,
+      parser: pipeline.parser,
       qonpania: await _qonpaniaClient(settings, caregivers),
       child: WawaFuerteApp(
         initialRoute: registered.isEmpty ? Routes.onboarding : Routes.home,

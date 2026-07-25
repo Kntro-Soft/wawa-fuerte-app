@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/domain/generate_weekly_plan.dart';
+import '../core/inference/inference_service.dart';
 import '../core/settings/caregiver_repository.dart';
 import '../core/storage/repositories.dart';
 import '../core/theme/app_theme.dart';
@@ -51,7 +52,33 @@ class WawaFuerteApp extends StatelessWidget {
               maxScaleFactor: 1.5,
             ),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: Consumer<InferenceService>(
+            builder: (context, inference, body) {
+              return Stack(
+                children: [
+                  body ?? const SizedBox.shrink(),
+                  if (inference.isDownloading)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: SafeArea(
+                        child: LinearProgressIndicator(
+                          value: (inference.downloadProgress ?? 0) > 0
+                              ? (inference.downloadProgress! / 100.0)
+                              : null,
+                          backgroundColor: Colors.blue.withValues(alpha: 0.2),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Colors.blue,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+            child: child,
+          ),
         );
       },
     );

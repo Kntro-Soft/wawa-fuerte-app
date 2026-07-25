@@ -14,6 +14,13 @@ class HybridInferenceService implements InferenceService {
   bool get isReady => primary.isReady || fallback.isReady;
 
   @override
+  bool get isDownloading => primary.isDownloading || fallback.isDownloading;
+
+  @override
+  int? get downloadProgress =>
+      fallback.downloadProgress ?? primary.downloadProgress;
+
+  @override
   ActiveInferenceMode get activeMode =>
       primary.isReady ? primary.activeMode : fallback.activeMode;
 
