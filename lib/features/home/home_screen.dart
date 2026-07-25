@@ -68,13 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wawa Fuerte'),
-        actions: [
-          IconButton(
-            onPressed: _changeCaregiverName,
-            icon: const Icon(LucideIcons.userPen600),
-            tooltip: 'Cambiar mi nombre',
-          ),
-        ],
       ),
       body: SafeArea(
         child: controller.isLoading
