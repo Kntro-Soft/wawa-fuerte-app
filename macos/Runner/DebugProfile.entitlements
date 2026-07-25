@@ -8,5 +8,11 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- Debug only. The Gemma .litertlm checkpoint is never committed (ADR-0004),
+	     so on the development machine it is read straight from ~/Downloads.
+	     A shipped build would copy it into the app container instead — this
+	     entitlement is deliberately absent from Release.entitlements. -->
+	<key>com.apple.security.files.downloads.read-only</key>
+	<true/>
 </dict>
 </plist>
