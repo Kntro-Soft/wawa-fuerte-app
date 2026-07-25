@@ -75,11 +75,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final editing = controller.isEditing;
 
     return Scaffold(
-      // Editing is reached from Home and is popped back to it, so it keeps a
-      // back arrow. First-run registration has nothing behind it and shows no
-      // bar at all.
-      appBar: editing
-          ? AppBar(title: Text('Los datos de ${controller.existing!.name}'))
+      // Show an AppBar with a back arrow whenever there is something to go back
+      // to — this covers both "Agregar otro niño" (pushed from Home) and the
+      // edit flow. First-run has nothing behind it and shows no bar at all.
+      appBar: (editing || Navigator.canPop(context))
+          ? AppBar(
+              title: Text(
+                editing
+                    ? 'Los datos de ${controller.existing!.name}'
+                    : 'Registrar niña o niño',
+              ),
+            )
           : null,
       body: SafeArea(
         child: ListView(

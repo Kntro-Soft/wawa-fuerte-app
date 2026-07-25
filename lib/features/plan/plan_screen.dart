@@ -17,6 +17,8 @@ import 'package:provider/provider.dart';
 
 import '../../app/route_arguments.dart';
 import '../../app/routes.dart';
+import '../../app/providers.dart';
+import '../../core/inference/inference_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/andean_band.dart';
@@ -46,6 +48,9 @@ class PlanScreen extends StatelessWidget {
           title: Text(controller.child.name),
           // No back arrow mid-generation, matching PopScope.
           automaticallyImplyLeading: !generating,
+          actions: [
+            if (!generating) const _InferenceStatusChip(),
+          ],
         ),
         body: SafeArea(
           child: switch (controller.status) {
@@ -403,6 +408,95 @@ class _PlanFailed extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// --- Shopping list item -----------------------------------------------------
+
+class _ShoppingItem extends StatelessWidget {
+  const _ShoppingItem({
+    required this.ingredient,
+    required this.have,
+    required this.onTap,
+  });
+
+  final String ingredient;
+  final bool have;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final label = ingredient.isEmpty
+        ? ingredient
+        : ingredient[0].toUpperCase() + ingredient.substring(1);
+
+    return Semantics(
+      button: true,
+      checked: have,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.xs,
+          ),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  have ? LucideIcons.circleCheck600 : LucideIcons.circle600,
+                  size: AppSpacing.iconSize,
+                  color: have ? AppColors.success : AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    decoration: have ? TextDecoration.lineThrough : null,
+                    color: have
+                        ? AppColors.onSurfaceVariant
+                        : AppColors.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --- Inference status chip --------------------------------------------------
+
+class _InferenceStatusChip extends StatelessWidget {
+  const _InferenceStatusChip();
+
+  @override
+  Widget build(BuildContext context) {
+    final isRealModel = gemmaModelPath.isNotEmpty;
+    final isReady = context.watch<InferenceService>().isReady;
+    
+    final (label, color) = isRealModel
+        ? isReady
+            ? ('Gemma', AppColors.success)
+            : ('Cargando...', AppColors.warning)  
+        : ('Demo', AppColors.warning);
+    
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.md),
+      child: Chip(
+        label: Text(label, style: const TextStyle(fontSize: 11, color: Colors.white)),
+        backgroundColor: color,
+        side: BorderSide.none,
+        padding: EdgeInsets.zero,
+        visualDensity: VisualDensity.compact,
+      ),
     );
   }
 }
