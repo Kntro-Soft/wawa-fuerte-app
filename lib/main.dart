@@ -17,6 +17,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
 
 import 'app/app.dart';
 import 'app/providers.dart';
@@ -26,6 +28,14 @@ import 'core/storage/in_memory_repositories.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // flutter_gemma registers NO inference engine by default — they are fully
+  // opt-in, and without this the first generation fails with "FlutterGemma not
+  // initialized". Cheap: it only registers the engine, it does not touch the
+  // weights, so startup stays fast even though the model is over half a gigabyte.
+  if (gemmaModelPath.isNotEmpty) {
+    await FlutterGemma.initialize(inferenceEngines: [LiteRtLmEngine()]);
+  }
 
   // Constructed here so startup can read from them before the tree exists, then
   // handed to AppProviders — one instance each, no shadowing (ADR-0009).
