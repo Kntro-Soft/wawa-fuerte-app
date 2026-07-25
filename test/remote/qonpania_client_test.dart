@@ -162,7 +162,7 @@ void main() {
 
     test('an empty replies array reports a misconfigured channel', () async {
       final (:client, requests: _) = clientWith(
-        onMessage: (_) => http.Response('{"status": "ok", "replies": []}', 200),
+        onMessage: (_) => _json({'status': 'ok', 'replies': <Object>[]}),
       );
 
       await expectLater(
@@ -192,38 +192,37 @@ void main() {
   });
 }
 
-http.Response _okSession(http.Request request) => http.Response(
-  jsonEncode({
-    'token': 'test-token-1',
-    'expires_at': DateTime.now()
-        .toUtc()
-        .add(const Duration(days: 30))
-        .toIso8601String(),
-    'contact': {'id': 'contact-1', 'name': 'María'},
-  }),
+/// A JSON response encoded the way the real server sends one: UTF-8 bytes,
+/// with no charset in the content type.
+///
+/// It must go through `http.Response.bytes`. The `http.Response(String, …)`
+/// constructor encodes with the charset from the content type, which — absent
+/// one — is **latin-1**, so any accent would reach the client as a byte its
+/// (correct) UTF-8 decoding rejects. That is a property of the test double, not
+/// of the server, and building the body as bytes is what keeps the two honest.
+http.Response _json(Map<String, dynamic> body) => http.Response.bytes(
+  utf8.encode(jsonEncode(body)),
   200,
-);
-
-/// Mirrors the documented shape: `content` is a **string** holding JSON.
-http.Response _okMessage(http.Request request) => http.Response.bytes(
-  utf8.encode(
-    jsonEncode({
-      'status': 'ok',
-      'message': {'id': 'msg-1', 'content': 'hola', 'type': 'text'},
-      'replies': [
-        {
-          'id': 'msg-2',
-          'content': '{"titulo": "Puré de papá"}',
-          'type': 'text',
-        },
-      ],
-    }),
-  ),
-  200,
-  // No charset, which is exactly when `http` would fall back to latin-1 and
-  // mangle the accents the client has to decode as UTF-8 itself.
   headers: {'content-type': 'application/json'},
 );
+
+http.Response _okSession(http.Request request) => _json({
+  'token': 'test-token-1',
+  'expires_at': DateTime.now()
+      .toUtc()
+      .add(const Duration(days: 30))
+      .toIso8601String(),
+  'contact': {'id': 'contact-1', 'name': 'María'},
+});
+
+/// Mirrors the documented shape: `content` is a **string** holding JSON.
+http.Response _okMessage(http.Request request) => _json({
+  'status': 'ok',
+  'message': {'id': 'msg-1', 'content': 'hola', 'type': 'text'},
+  'replies': [
+    {'id': 'msg-2', 'content': '{"titulo": "Puré de papá"}', 'type': 'text'},
+  ],
+});
 
 /// Stands in for a dropped connection: any non-HTTP error out of the transport.
 class SocketishError implements Exception {
