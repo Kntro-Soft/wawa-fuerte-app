@@ -1,0 +1,105 @@
+/// The dependency graph, assembled in exactly one place.
+///
+/// OWNER: P1 (`main.dart`) with P3.
+///
+/// ADR-0009 requires this: Provider resolves by runtime type, so registering two
+/// providers of the same type anywhere in the tree silently shadows one of them
+/// and the bug shows up as a screen reading the wrong instance. Keeping the
+/// whole graph here makes that impossible to do by accident.
+///
+/// Everything below is currently a **fake or in-memory implementation**. That is
+/// the working agreement in `AGENTS.md`, not a shortcut: real Gemma inference
+/// needs a physical Android handset (ADR-0003, ADR-0004), so the UI is built and
+/// demoed against `FakeInferenceService` and `FakeRecipeRetriever`. Swapping in
+/// the real ones is an edit to this file and nothing else.
+///
+/// `TableIronCalculator` is the one exception — it is the **real** implementation
+/// everywhere, including in tests. Its numbers are the published INS/FAO-WHO
+/// figures (ADR-0012), and faking the one clinically meaningful calculation in
+/// the app would defeat the point of having sourced it.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../core/domain/generate_weekly_plan.dart';
+import '../core/inference/fake_inference_service.dart';
+import '../core/inference/inference_service.dart';
+import '../core/nutrition/iron_calculator.dart';
+import '../core/nutrition/table_iron_calculator.dart';
+import '../core/rag/fake_recipe_retriever.dart';
+import '../core/rag/recipe_retriever.dart';
+import '../core/rag/simple_plan_parser.dart';
+import '../core/storage/in_memory_repositories.dart';
+import '../core/storage/repositories.dart';
+import '../features/home/home_controller.dart';
+
+/// Builds the app-wide providers.
+///
+/// Optional parameters exist so widget tests can inject their own doubles
+/// without going through `main()`.
+class AppProviders extends StatelessWidget {
+  const AppProviders({
+    required this.child,
+    this.profiles,
+    this.plans,
+    this.retriever,
+    this.inference,
+    this.parser,
+    super.key,
+  });
+
+  final Widget child;
+  final ProfileRepository? profiles;
+  final PlanRepository? plans;
+  final RecipeRetriever? retriever;
+  final InferenceService? inference;
+  final PlanParser? parser;
+
+  @override
+  Widget build(BuildContext context) {
+    final profileRepository = profiles ?? InMemoryProfileRepository();
+    final planRepository = plans ?? InMemoryPlanRepository();
+    final recipeRetriever = retriever ?? FakeRecipeRetriever();
+    final inferenceService = inference ?? FakeInferenceService();
+    final planParser = parser ?? const SimplePlanParser();
+    const calculator = TableIronCalculator();
+
+    return MultiProvider(
+      providers: [
+        // --- Stateless collaborators, constructed once. ---------------------
+        Provider<ProfileRepository>.value(value: profileRepository),
+        Provider<PlanRepository>.value(value: planRepository),
+        Provider<RecipeRetriever>.value(value: recipeRetriever),
+        Provider<InferenceService>.value(value: inferenceService),
+        Provider<PlanParser>.value(value: planParser),
+        Provider<IronCalculator>.value(value: calculator),
+
+        // --- The one place all four modules meet. ---------------------------
+        Provider<GenerateWeeklyPlan>(
+          create: (_) => GenerateWeeklyPlan(
+            retriever: recipeRetriever,
+            inference: inferenceService,
+            calculator: calculator,
+            plans: planRepository,
+            parser: planParser,
+          ),
+        ),
+
+        // --- Feature controllers. -------------------------------------------
+        //
+        // Home is app-scoped because it is returned to constantly and its list
+        // must survive a pop. Onboarding and Plan are route-scoped instead —
+        // both should start clean every time they are opened, and Plan needs a
+        // `ChildProfile` that only exists once a child has been picked.
+        ChangeNotifierProvider<HomeController>(
+          create: (_) => HomeController(
+            profiles: profileRepository,
+            plans: planRepository,
+          ),
+        ),
+      ],
+      child: child,
+    );
+  }
+}
