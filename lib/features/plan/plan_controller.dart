@@ -137,9 +137,12 @@ class PlanController extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    // Best-effort: wakelock is unsupported on some desktop targets and a failure
-    // to hold the screen awake must never be the thing that stops a plan.
-    await _enableWakelock();
+    // Fire and forget, deliberately NOT awaited. Keeping the screen on is a
+    // nicety; generating the plan is the job. On platforms without a wakelock
+    // implementation the platform call can hang rather than fail, and awaiting
+    // it would mean a caregiver stares at the waiting screen forever because
+    // her phone could not be told to stay awake.
+    _enableWakelock();
 
     try {
       _plan = await generatePlan(
@@ -157,7 +160,7 @@ class PlanController extends ChangeNotifier {
       debugPrint('Plan generation failed: $error');
       _status = PlanStatus.failed;
     } finally {
-      await _disableWakelock();
+      _disableWakelock();
       notifyListeners();
     }
   }
@@ -208,20 +211,18 @@ class PlanController extends ChangeNotifier {
     return {...selectedIngredients, ...extra}.toList();
   }
 
-  Future<void> _enableWakelock() async {
+  void _enableWakelock() {
     try {
-      await WakelockPlus.enable();
-    } catch (_) {
-      // Unsupported platform. Not worth surfacing.
-    }
+      // Errors are swallowed on both paths: an unsupported platform is not
+      // something to tell the user about.
+      WakelockPlus.enable().catchError((_) {});
+    } catch (_) {}
   }
 
-  Future<void> _disableWakelock() async {
+  void _disableWakelock() {
     try {
-      await WakelockPlus.disable();
-    } catch (_) {
-      // Unsupported platform. Not worth surfacing.
-    }
+      WakelockPlus.disable().catchError((_) {});
+    } catch (_) {}
   }
 
   @override
