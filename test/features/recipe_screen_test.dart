@@ -25,6 +25,9 @@ void main() {
     await tester.tap(find.text('Rosita'));
     await tester.pumpAndSettle();
 
+    // Each chip now carries its drawn silhouette, so the pantry runs deeper
+    // than one viewport — the same scroll a real user does.
+    await scrollTo(tester, find.text('Papa'));
     await tester.tap(find.text('Papa'));
     await tester.pumpAndSettle();
 
@@ -42,6 +45,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
+    // The coverage figure now takes the top of the result screen — it is the
+    // answer, the seven rows are the working — so the week starts below it.
+    await scrollTo(tester, find.text('Lunes'));
     await tester.tap(find.text('Lunes'));
     await tester.pumpAndSettle();
 

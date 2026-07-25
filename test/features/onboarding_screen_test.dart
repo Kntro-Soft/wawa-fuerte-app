@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wawafuerte/features/onboarding/age_band.dart';
 import 'package:wawafuerte/features/onboarding/onboarding_controller.dart';
 import 'package:wawafuerte/core/domain/child_profile.dart';
+import 'package:wawafuerte/core/settings/caregiver_repository.dart';
 import 'package:wawafuerte/core/storage/in_memory_repositories.dart';
 
 import '../support/pump_app.dart';
@@ -167,8 +168,10 @@ void main() {
   // Controller-level coverage of the same rule, so a UI refactor cannot quietly
   // reintroduce a default.
   group('OnboardingController.hemoglobin', () {
-    OnboardingController controller() =>
-        OnboardingController(profiles: InMemoryProfileRepository());
+    OnboardingController controller() => OnboardingController(
+      profiles: InMemoryProfileRepository(),
+      caregivers: InMemoryCaregiverRepository(),
+    );
 
     test('is null when the field was never touched', () {
       expect(controller().hemoglobin, isNull);

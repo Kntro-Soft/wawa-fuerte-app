@@ -13,6 +13,7 @@ import 'package:wawafuerte/core/domain/weekly_plan.dart';
 import 'package:wawafuerte/core/theme/app_colors.dart';
 import 'package:wawafuerte/core/widgets/iron_coverage_bar.dart';
 import 'package:wawafuerte/features/plan/plan_controller.dart';
+import 'package:wawafuerte/features/plan/widgets/plan_generating_view.dart';
 import 'package:wawafuerte/features/plan/widgets/recipe_row.dart';
 
 import '../support/pump_app.dart';
@@ -31,6 +32,10 @@ void main() {
     await tester.tap(find.text('Rosita'));
     await tester.pumpAndSettle();
 
+    // The pantry is fourteen chips deep and each one now carries its drawn
+    // silhouette, so the later ones sit below the fold on a small screen —
+    // exactly as they do for a real user.
+    await scrollTo(tester, find.text('Papa'));
     await tester.tap(find.text('Papa'));
     await tester.pumpAndSettle();
 
@@ -133,6 +138,7 @@ void main() {
 
       expect(cta().onPressed, isNull);
 
+      await scrollTo(tester, find.text('Papa'));
       await tester.tap(find.text('Papa'));
       await tester.pumpAndSettle();
       expect(cta().onPressed, isNull, reason: 'no budget yet');
@@ -160,6 +166,8 @@ void main() {
         listen: false,
       );
       expect(controller.plan!.days, hasLength(7));
+
+      await scrollTo(tester, find.text('Lunes'));
       expect(find.byType(RecipeRow), findsWidgets);
     });
 
@@ -354,12 +362,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The raw figure is what ADR-0005 protects; the percentage alone would be
-      // an unverifiable score.
-      expect(
-        find.text('27,0 mg de los 35,0 mg de la semana · 77 %'),
-        findsOneWidget,
-      );
+      // The percentage is the headline, at display size, because it answers
+      // the question the caregiver opened the app with.
+      expect(find.text('77 %'), findsOneWidget);
+
+      // And the raw figure sits right under it. This is what ADR-0005
+      // protects: a percentage with no numerator is an unverifiable score.
+      expect(find.text('27,0 mg de los 35,0 mg de la semana'), findsOneWidget);
     });
 
     testWidgets('the coverage bar is green, not red', (tester) async {
@@ -420,6 +429,34 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 50));
       expect(find.text('El menú de Rosita'), findsOneWidget);
+    });
+
+    testWidgets('the waiting copy keeps her company without promising an end', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: PlanGeneratingView(childName: 'Rosita')),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(PlanGeneratingView.messages.first), findsOneWidget);
+
+      // The line changes on a timer, so a wait of tens of seconds is not tens
+      // of seconds of the same sentence.
+      await tester.pump(PlanGeneratingView.messageInterval);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text(PlanGeneratingView.messages[1]), findsOneWidget);
+
+      // But it never narrates progress it cannot know. These lines run on a
+      // Timer, not on the model: "ya casi" to someone with forty seconds left
+      // is a promise the app cannot keep.
+      for (final message in PlanGeneratingView.messages) {
+        expect(message.toLowerCase(), isNot(contains('ya casi')));
+        expect(message.toLowerCase(), isNot(contains('falta poco')));
+        expect(message, isNot(contains('%')));
+      }
     });
   });
 }

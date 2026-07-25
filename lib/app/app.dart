@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/domain/generate_weekly_plan.dart';
+import '../core/settings/caregiver_repository.dart';
 import '../core/storage/repositories.dart';
 import '../core/theme/app_theme.dart';
 import '../features/home/home_screen.dart';
@@ -57,13 +58,19 @@ class WawaFuerteApp extends StatelessWidget {
   Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case Routes.onboarding:
+        // Optional: no arguments means "register a new child", which is what
+        // the first run and the "Agregar otro niño o niña" button both pass.
+        final args = settings.arguments as OnboardingArguments?;
         return MaterialPageRoute(
           settings: settings,
           builder: (context) => ChangeNotifierProvider(
-            // Route-scoped: adding a second child must start from a blank form.
+            // Route-scoped: adding a second child must start from a blank form,
+            // and editing must start from that child's answers.
             create: (context) => OnboardingController(
               profiles: context.read<ProfileRepository>(),
-            ),
+              caregivers: context.read<CaregiverRepository>(),
+              existing: args?.child,
+            )..load(),
             child: const OnboardingScreen(),
           ),
         );

@@ -24,6 +24,7 @@ import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
 import 'core/rag/ins_recipe_retriever.dart';
+import 'core/settings/caregiver_repository.dart';
 import 'core/storage/database.dart';
 import 'core/storage/sqlite_repositories.dart';
 
@@ -47,9 +48,7 @@ Future<void> main() async {
   final database = await openAppDatabase();
   final profiles = SqliteProfileRepository(database);
   final plans = SqlitePlanRepository(database);
-  // The real INS corpus (ADR-0005, ADR-0011), not the sample retriever. Gemma
-  // already honours whatever recipes it is handed — this is what makes those
-  // recipes the real ones instead of plausible sample data.
+  final caregivers = SqliteCaregiverRepository(database);
   final retriever = InsRecipeRetriever();
 
   await retriever.load();
@@ -59,6 +58,7 @@ Future<void> main() async {
     AppProviders(
       profiles: profiles,
       plans: plans,
+      caregivers: caregivers,
       retriever: retriever,
       child: WawaFuerteApp(
         initialRoute: registered.isEmpty ? Routes.onboarding : Routes.home,

@@ -9,6 +9,20 @@ library;
 import '../core/domain/child_profile.dart';
 import '../features/plan/plan_controller.dart';
 
+/// Arguments for `Routes.onboarding`: which child is being edited, if any.
+///
+/// Editing reuses the registration form rather than adding a fifth route
+/// (`Routes` documents why there are four). The questions are the same
+/// questions; only their starting answers differ, and a second screen asking
+/// them again in a different order would be a second thing to learn.
+///
+/// Null — or no arguments at all — means registering a new child.
+class OnboardingArguments {
+  const OnboardingArguments({this.child});
+
+  final ChildProfile? child;
+}
+
 /// Arguments for `Routes.plan`: which child the week is for.
 class PlanArguments {
   const PlanArguments({required this.child});

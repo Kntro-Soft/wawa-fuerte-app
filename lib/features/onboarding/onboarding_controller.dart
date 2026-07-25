@@ -16,11 +16,20 @@
 /// not a number the user actually typed. `ChildProfile.hemoglobin` is nullable
 /// for this reason and the whole app already handles null by producing a
 /// standard age-based preventive plan.
+///
+/// **This holds in edit mode too.** Editing a registered child prefills her
+/// name, age, region and sex — but *never* the hemoglobin input. A reading
+/// already on file is shown beside the field as read-only text with its date,
+/// and the field itself stays empty: what is typed there is a **new** reading
+/// from a new CRED check-up, which is the number that actually changes. Leaving
+/// it empty keeps the stored reading untouched; it never clears it and never
+/// re-saves an old number as if it were today's.
 library;
 
 import 'package:flutter/foundation.dart';
 
 import '../../core/domain/child_profile.dart';
+import '../../core/settings/caregiver_repository.dart';
 import '../../core/storage/repositories.dart';
 import 'age_band.dart';
 
@@ -40,9 +49,41 @@ enum CredAnswer {
 }
 
 class OnboardingController extends ChangeNotifier {
-  OnboardingController({required this.profiles});
+  OnboardingController({
+    required this.profiles,
+    required this.caregivers,
+    this.existing,
+    DateTime? now,
+  }) {
+    final child = existing;
+    if (child == null) return;
+
+    // Edit mode. Everything the caregiver already told us comes back on the
+    // form — except the hemoglobin reading. See the class doc.
+    childName = child.name;
+    region = child.region;
+    sex = child.sex;
+    _initialAgeBand = AgeBandMatch.forAgeMonths(
+      child.ageMonthsAt(now ?? DateTime.now()),
+    );
+    ageBand = _initialAgeBand;
+    // The field is only on screen when the booklet is at hand, and updating the
+    // reading is the main reason to reopen this form, so a child who already
+    // has one starts with the question answered "yes" — with the field empty.
+    credAnswer = child.hasHemoglobin ? CredAnswer.yes : CredAnswer.unknown;
+  }
 
   final ProfileRepository profiles;
+  final CaregiverRepository caregivers;
+
+  /// The child being edited, or null when registering a new one.
+  final ChildProfile? existing;
+
+  bool get isEditing => existing != null;
+
+  /// The band derived from the stored birth date, so an untouched age question
+  /// can leave the original date alone instead of rounding it to a midpoint.
+  AgeBand? _initialAgeBand;
 
   // --- Answers. ---------------------------------------------------------------
 
@@ -71,6 +112,28 @@ class OnboardingController extends ChangeNotifier {
 
   bool _saving = false;
   bool get isSaving => _saving;
+
+  /// Whether the caregiver's own name still has to be asked for.
+  ///
+  /// **It is asked once and never again.** After the first child exists, the
+  /// place to see or change it is the dialog on the Home header — repeating an
+  /// optional question every time a sibling is registered is a tax on the
+  /// families who have most children to register.
+  ///
+  /// Starts false so the question cannot flash onto the screen and then vanish
+  /// when [load] resolves.
+  bool _asksCaregiverName = false;
+  bool get asksCaregiverName => _asksCaregiverName;
+
+  /// Reads what the app already knows, so the form does not re-ask it.
+  Future<void> load() async {
+    if (isEditing) return;
+
+    final registered = await profiles.findAll();
+    final storedName = await caregivers.read();
+    _asksCaregiverName = registered.isEmpty && storedName == null;
+    notifyListeners();
+  }
 
   // --- Derived. ---------------------------------------------------------------
 
@@ -150,6 +213,9 @@ class OnboardingController extends ChangeNotifier {
 
   /// Persists the child and returns the saved profile, or null if the form is
   /// incomplete.
+  ///
+  /// In edit mode this writes back over the same id, so the child keeps her
+  /// plans: `ProfileRepository.save` upserts.
   Future<ChildProfile?> submit({DateTime? now}) async {
     if (!canSubmit || _saving) return null;
 
@@ -158,23 +224,51 @@ class OnboardingController extends ChangeNotifier {
 
     try {
       final today = now ?? DateTime.now();
+      final child = existing;
+
+      // Only a *typed* reading. Null when the field was left empty, when the
+      // booklet is not at hand, or when what was typed is not a plausible
+      // number — this is the line the class doc is about.
+      final typedHemoglobin = hemoglobin;
+
       final profile = ChildProfile(
-        id: 'child-${today.microsecondsSinceEpoch}',
+        id: child?.id ?? 'child-${today.microsecondsSinceEpoch}',
         name: childName.trim(),
-        birthDate: ageBand!.birthDateFrom(today),
+        birthDate: _resolveBirthDate(today),
         region: region!,
         sex: sex,
-        // Null unless she actually gave us a reading. This is the line the
-        // class doc is about.
-        hemoglobin: hemoglobin,
-        hemoglobinDate: hemoglobin == null ? null : today,
+        // A new reading replaces the old one and carries today's date. No new
+        // reading leaves whatever was on file exactly as it was — an edit that
+        // skipped this field is not a statement that the old reading is wrong.
+        hemoglobin: typedHemoglobin ?? child?.hemoglobin,
+        hemoglobinDate: typedHemoglobin != null ? today : child?.hemoglobinDate,
       );
 
       await profiles.save(profile);
+
+      if (_asksCaregiverName) {
+        // Null-safe by construction: the repository stores nothing for a name
+        // that is blank, so skipping the question stores nothing.
+        await caregivers.write(caregiverName);
+      }
+
       return profile;
     } finally {
       _saving = false;
       notifyListeners();
     }
+  }
+
+  /// The stored birth date when the age answer was not touched, a fresh
+  /// estimate when it was.
+  ///
+  /// The age question is asked in ranges (see [AgeBand]), so re-deriving the
+  /// date on every save would drag a real birth date to the midpoint of its
+  /// band for no reason — a caregiver correcting a spelling mistake must not
+  /// silently change her child's age.
+  DateTime _resolveBirthDate(DateTime today) {
+    final child = existing;
+    if (child != null && ageBand == _initialAgeBand) return child.birthDate;
+    return ageBand!.birthDateFrom(today);
   }
 }

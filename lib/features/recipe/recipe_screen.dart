@@ -30,7 +30,9 @@ import '../../core/domain/recipe.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/day_names.dart';
+import '../../core/widgets/food_glyph.dart';
 import '../../core/widgets/listen_button.dart';
+import '../../core/widgets/section_heading.dart';
 import '../plan/plan_controller.dart';
 
 class RecipeScreen extends StatefulWidget {
@@ -132,7 +134,10 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
 
-                Text('Qué necesitas', style: theme.textTheme.headlineSmall),
+                const SectionHeading(
+                  icon: LucideIcons.shoppingBasket600,
+                  title: 'Qué necesitas',
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 for (final ingredient in recipe.ingredients) ...[
                   _IngredientLine(ingredient: ingredient),
@@ -140,7 +145,10 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 ],
                 const SizedBox(height: AppSpacing.xl),
 
-                Text('Cómo se prepara', style: theme.textTheme.headlineSmall),
+                const SectionHeading(
+                  icon: LucideIcons.cookingPot600,
+                  title: 'Cómo se prepara',
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 for (final (index, step) in _steps(recipe).indexed) ...[
                   _StepLine(number: index + 1, text: step),
@@ -187,13 +195,10 @@ class _IngredientLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const ExcludeSemantics(
-          child: Icon(
-            LucideIcons.check600,
-            size: AppSpacing.iconSize,
-            color: AppColors.success,
-          ),
-        ),
+        // Was a green check, which is the app's "done" mark and meant nothing
+        // here — an ingredient list is not a list of things achieved. The
+        // silhouette says *which food* instead, in the food's own colour.
+        FoodGlyph(ingredient: ingredient),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Text(
