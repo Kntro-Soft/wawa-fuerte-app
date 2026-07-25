@@ -12,8 +12,8 @@ import 'dart:io';
 
 import 'package:flutter_gemma/flutter_gemma.dart';
 
-import '../domain/child_profile.dart';
 import 'inference_service.dart';
+import 'plan_prompt_builder.dart';
 
 class GemmaInferenceService implements InferenceService {
   GemmaInferenceService({
@@ -89,77 +89,20 @@ class GemmaInferenceService implements InferenceService {
     _model = null;
   }
 
-  /// Builds the grounded prompt.
+  /// Builds the grounded prompt, asking for the numbered list
+  /// [SimplePlanParser] reads back.
   ///
   /// Exposed for testing: prompt wording is load-bearing (ADR-0005), so it is
   /// verified without loading a model.
-  static String buildPrompt(PlanPrompt prompt) {
-    final buffer = StringBuffer()
-      ..writeln(
-        'Eres un asistente nutricional del Instituto Nacional de Salud del Perú.',
-      )
-      ..writeln(
-        'Arma un menú de 7 días para un niño de ${prompt.ageMonths} meses.',
-      )
-      ..writeln();
+  static String buildPrompt(PlanPrompt prompt) =>
+      buildGroundedPlanPrompt(prompt, responseFormat: _responseFormat);
 
-    // ADR-0007: hemoglobin is optional. Without a reading we ask for a standard
-    // preventive plan; we never invent a value to fill the gap.
-    if (prompt.isPersonalised) {
-      buffer
-        ..writeln(
-          'El niño tiene un nivel de hemoglobina de ${prompt.hemoglobin} g/dL, '
-          'por debajo de lo esperado para su edad.',
-        )
-        ..writeln('Prioriza las recetas con mayor cantidad de hierro.');
-    } else {
-      buffer.writeln(
-        'No hay dato de hemoglobina. Arma un plan preventivo estándar '
-        'apropiado para su edad.',
-      );
-    }
-
-    buffer
-      ..writeln()
-      ..writeln('Ingredientes disponibles en casa:')
-      ..writeln(prompt.availableIngredients.join(', '))
-      ..writeln()
-      ..writeln(
-        'Presupuesto semanal: S/ ${prompt.weeklyBudgetPen.toStringAsFixed(2)}',
-      )
-      ..writeln()
-      ..writeln('RECETAS OFICIALES DISPONIBLES:');
-
-    for (final recipe in prompt.candidateRecipes) {
-      buffer.writeln(
-        '- ${recipe.name} (${recipe.ironMg.toStringAsFixed(1)} mg de hierro)',
-      );
-    }
-
-    // ADR-0005: the model sequences the INS corpus, it does not invent dishes.
-    buffer
-      ..writeln()
-      ..writeln(
-        'REGLA: usa ÚNICAMENTE las recetas de la lista anterior. '
-        'No inventes platos nuevos ni modifiques sus nombres.',
-      )
-      ..writeln(
-        'Responde solo con 7 líneas numeradas del 1 al 7, una receta por línea, '
-        'sin explicaciones ni texto adicional.',
-      )
-      ..writeln('Ejemplo del formato exacto:')
-      ..writeln('1. Nombre de la receta');
-
-    return buffer.toString();
-  }
-}
-
-/// Kept out of [GemmaInferenceService] so the prompt can be unit-tested and so
-/// the region reaches the prompt when we start using it.
-extension PlanPromptRegion on PlanPrompt {
-  String get regionLabel => switch (region) {
-    Region.coast => 'costa',
-    Region.highlands => 'sierra',
-    Region.jungle => 'selva',
-  };
+  /// A bare numbered list. Gemma 3 1B is small enough that asking it for
+  /// structured JSON costs accuracy on the part that matters — picking the
+  /// right recipes — so the format stays as cheap as the parser allows.
+  static const String _responseFormat =
+      'Responde solo con 7 líneas numeradas del 1 al 7, una receta por línea, '
+      'sin explicaciones ni texto adicional.\n'
+      'Ejemplo del formato exacto:\n'
+      '1. Nombre de la receta';
 }

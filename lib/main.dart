@@ -24,7 +24,11 @@ import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
 import 'core/rag/ins_recipe_retriever.dart';
+import 'core/remote/device_reference.dart';
+import 'core/remote/qonpania_client.dart';
+import 'core/remote/qonpania_config.dart';
 import 'core/settings/caregiver_repository.dart';
+import 'core/settings/key_value_store.dart';
 import 'core/storage/database.dart';
 import 'core/storage/sqlite_repositories.dart';
 
@@ -46,9 +50,10 @@ Future<void> main() async {
   // survive closing the app. The whole multi-child model and the weekly
   // follow-up in Flow D are meaningless if the profiles vanish (ADR-0013).
   final database = await openAppDatabase();
+  final settings = SqliteKeyValueStore(database);
   final profiles = SqliteProfileRepository(database);
   final plans = SqlitePlanRepository(database);
-  final caregivers = SqliteCaregiverRepository(database);
+  final caregivers = SqliteCaregiverRepository.store(settings);
   final retriever = InsRecipeRetriever();
 
   await retriever.load();
@@ -60,9 +65,32 @@ Future<void> main() async {
       plans: plans,
       caregivers: caregivers,
       retriever: retriever,
+      qonpania: await _qonpaniaClient(settings, caregivers),
       child: WawaFuerteApp(
         initialRoute: registered.isEmpty ? Routes.onboarding : Routes.home,
       ),
     ),
+  );
+}
+
+/// The hosted-agent client, or null when no channel key was compiled in.
+///
+/// Null is the normal case and the one that keeps ADR-0002 true: without a key
+/// the app never opens a socket, and generation stays on-device. See ADR-0015.
+Future<QonpaniaClient?> _qonpaniaClient(
+  KeyValueStore settings,
+  CaregiverRepository caregivers,
+) async {
+  final config = QonpaniaConfig.fromEnvironment();
+  if (!config.isConfigured) return null;
+
+  return QonpaniaClient(
+    config: config,
+    // Persisted, so the agent sees one returning contact rather than a new one
+    // per launch.
+    userReference: await resolveDeviceReference(settings),
+    // Her own name, if she gave one (Flow 0). Never the child's name, never a
+    // hemoglobin reading — those stay on the device.
+    caregiverName: await caregivers.read(),
   );
 }

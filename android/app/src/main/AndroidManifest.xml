@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Only the debug and profile manifests declared INTERNET, which Flutter
+         adds for hot reload. The release build had none, so the hosted
+         nutrition agent (ADR-0015) would have failed on the demo handset while
+         working on every developer's `flutter run`. Declared here because CI
+         ships a release APK.
+
+         The app still runs entirely offline when no channel key is compiled in:
+         the permission allows a socket, it does not open one. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="wawafuerte"
         android:name="${applicationName}"

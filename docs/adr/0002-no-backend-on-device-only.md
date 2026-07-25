@@ -1,8 +1,14 @@
 # 0002. No backend, on-device only
 
-- Status: Accepted
+- Status: Accepted, amended by [ADR-0015](0015-hosted-nutrition-agent.md)
 - Date: 2026-07-25
 - Deciders: Kntro-Soft team
+
+> **Amendment (ADR-0015).** Plan generation may now optionally run against a
+> hosted nutrition agent when a channel API key is compiled in. Everything below
+> still describes the default build, which compiles in no key, opens no socket
+> and keeps all data on the device. Read ADR-0015 for what changes when a key is
+> present — in particular, that hemoglobin readings then leave the handset.
 
 ## Context
 

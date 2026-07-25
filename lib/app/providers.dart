@@ -24,11 +24,14 @@ import '../core/domain/generate_weekly_plan.dart';
 import '../core/inference/fake_inference_service.dart';
 import '../core/inference/gemma_inference_service.dart';
 import '../core/inference/inference_service.dart';
+import '../core/inference/qonpania_inference_service.dart';
 import '../core/nutrition/iron_calculator.dart';
 import '../core/nutrition/table_iron_calculator.dart';
 import '../core/rag/ins_recipe_retriever.dart';
+import '../core/rag/qonpania_plan_parser.dart';
 import '../core/rag/recipe_retriever.dart';
 import '../core/rag/simple_plan_parser.dart';
+import '../core/remote/qonpania_client.dart';
 import '../core/settings/caregiver_repository.dart';
 import '../core/storage/in_memory_repositories.dart';
 import '../core/storage/repositories.dart';
@@ -47,6 +50,7 @@ class AppProviders extends StatelessWidget {
     this.retriever,
     this.inference,
     this.parser,
+    this.qonpania,
     super.key,
   });
 
@@ -58,14 +62,22 @@ class AppProviders extends StatelessWidget {
   final InferenceService? inference;
   final PlanParser? parser;
 
+  /// Non-null only when a channel key was supplied at build time, and only ever
+  /// constructed in `main()` — the tree never opens a socket on its own.
+  final QonpaniaClient? qonpania;
+
   @override
   Widget build(BuildContext context) {
     final profileRepository = profiles ?? InMemoryProfileRepository();
     final planRepository = plans ?? InMemoryPlanRepository();
     final caregiverRepository = caregivers ?? InMemoryCaregiverRepository();
     final recipeRetriever = retriever ?? InsRecipeRetriever();
-    final inferenceService = inference ?? defaultInferenceService();
-    final planParser = parser ?? const SimplePlanParser();
+    final pipeline = defaultPlanPipeline(qonpania: qonpania);
+    // Overriding one half is allowed: a widget test injecting the fake service
+    // against `QonpaniaPlanParser` still works, because that parser falls back
+    // to `SimplePlanParser` on anything that is not its JSON envelope.
+    final inferenceService = inference ?? pipeline.inference;
+    final planParser = parser ?? pipeline.parser;
     const calculator = TableIronCalculator();
 
     return MultiProvider(
@@ -118,12 +130,38 @@ class AppProviders extends StatelessWidget {
 /// The weights are never committed (ADR-0004), so there is no sensible default.
 const gemmaModelPath = String.fromEnvironment('GEMMA_MODEL_PATH');
 
-/// Real inference when a checkpoint was supplied, the fake otherwise.
+/// Where a plan comes from, and how its text is read back.
 ///
-/// This keeps the fake as the default so that `flutter test`, CI, and any
-/// developer without the 557 MB file still get a running app — which is the
-/// whole reason [InferenceService] is an interface (ADR-0004).
-InferenceService defaultInferenceService() {
-  if (gemmaModelPath.isEmpty) return FakeInferenceService();
-  return GemmaInferenceService(modelPath: gemmaModelPath);
+/// The two travel together on purpose. Each generator is asked for a different
+/// response format — Gemma for a numbered list, the hosted agent for a JSON
+/// envelope — and pairing the wrong parser with a generator does not throw, it
+/// silently produces a week of padding. Making the pair one value means the
+/// choice is made once, here.
+class PlanPipeline {
+  const PlanPipeline({required this.inference, required this.parser});
+
+  final InferenceService inference;
+  final PlanParser parser;
+}
+
+/// The best available generator: the hosted agent if a key was supplied
+/// (ADR-0015), on-device Gemma if a checkpoint was, the fake otherwise.
+///
+/// The fake stays the default so that `flutter test`, CI, and any developer
+/// with neither a key nor the 557 MB file still get a running app — which is
+/// the whole reason [InferenceService] is an interface (ADR-0004).
+PlanPipeline defaultPlanPipeline({QonpaniaClient? qonpania}) {
+  if (qonpania != null) {
+    return PlanPipeline(
+      inference: QonpaniaInferenceService(qonpania),
+      parser: const QonpaniaPlanParser(),
+    );
+  }
+
+  return PlanPipeline(
+    inference: gemmaModelPath.isEmpty
+        ? FakeInferenceService()
+        : GemmaInferenceService(modelPath: gemmaModelPath),
+    parser: const SimplePlanParser(),
+  );
 }

@@ -8,13 +8,13 @@
 /// which is keyed by child and cascades on delete (ADR-0013) — a caregiver who
 /// removes her only child's profile should not lose her own name with it.
 ///
-/// It lives in its own key/value table instead. The table is created lazily on
-/// first use with `CREATE TABLE IF NOT EXISTS` rather than in `_onCreate`, so
-/// this feature needs no schema-version bump and no migration on phones that
-/// already have a database from an earlier build.
+/// It lives in the shared key/value table instead — see [KeyValueStore], which
+/// owns the lazy table creation.
 library;
 
 import 'package:sqflite/sqflite.dart';
+
+import 'key_value_store.dart';
 
 abstract interface class CaregiverRepository {
   /// The stored name, or null when she never gave one. Never a placeholder:
@@ -48,52 +48,23 @@ class InMemoryCaregiverRepository implements CaregiverRepository {
 }
 
 class SqliteCaregiverRepository implements CaregiverRepository {
-  SqliteCaregiverRepository(this._db);
+  SqliteCaregiverRepository(Database db) : this.store(SqliteKeyValueStore(db));
 
-  final Database _db;
+  /// Takes the store directly, so `main()` can share one instance with the
+  /// device reference and a test can back it with [InMemoryKeyValueStore].
+  SqliteCaregiverRepository.store(this._store);
 
-  static const String table = 'app_settings';
-  static const String _key = 'caregiver_name';
+  final KeyValueStore _store;
 
-  bool _tableReady = false;
-
-  Future<void> _ensureTable() async {
-    if (_tableReady) return;
-    await _db.execute(
-      'CREATE TABLE IF NOT EXISTS $table ('
-      'key TEXT PRIMARY KEY, '
-      'value TEXT NOT NULL)',
-    );
-    _tableReady = true;
-  }
+  static const String key = 'caregiver_name';
 
   @override
-  Future<String?> read() async {
-    await _ensureTable();
-    final rows = await _db.query(
-      table,
-      columns: ['value'],
-      where: 'key = ?',
-      whereArgs: [_key],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return normaliseCaregiverName(rows.first['value'] as String?);
-  }
+  Future<String?> read() async =>
+      normaliseCaregiverName(await _store.read(key));
 
+  /// Normalising on the way in *and* on the way out is deliberate: a row
+  /// written by an earlier build could still hold whitespace.
   @override
-  Future<void> write(String? name) async {
-    await _ensureTable();
-    final value = normaliseCaregiverName(name);
-
-    if (value == null) {
-      await _db.delete(table, where: 'key = ?', whereArgs: [_key]);
-      return;
-    }
-
-    await _db.insert(table, {
-      'key': _key,
-      'value': value,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
-  }
+  Future<void> write(String? name) =>
+      _store.write(key, normaliseCaregiverName(name));
 }

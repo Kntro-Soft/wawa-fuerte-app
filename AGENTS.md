@@ -7,8 +7,12 @@ purity.**
 ## Purpose
 
 Flutter mobile app that generates weekly nutrition plans against childhood anemia,
-using **Gemma running 100% on-device**. **There is no backend and no network.**
-Everything (model, recipe book, database) lives inside the device.
+using **Gemma running 100% on-device**. Everything (model, recipe book, database) lives inside
+the device, and **the default build has no backend and opens no socket**.
+
+Since [ADR-0015](docs/adr/0015-hosted-nutrition-agent.md) a build may *opt in* to the hosted
+nutrition agent by compiling in a channel key. That is the only network path in the app, it is
+off by default, and the on-device path stays fully working.
 
 ## Big Picture
 
@@ -45,6 +49,7 @@ voices) must be checked on Android before it counts as done, even if it looked f
 lib/
   core/
     inference/   # Gemma + MediaPipe.        OWNER: P1
+    remote/      # hosted agent (ADR-0015).  OWNER: P1
     rag/         # recipe search.            OWNER: P2
     nutrition/   # iron calculation.         OWNER: P2
     storage/     # local SQLite/Hive.        OWNER: P4
@@ -63,8 +68,10 @@ assets/
 
 - **Nobody commits the `.task` model** — it weighs more than 1 GB and blows up the repo. It goes
   in `assets/models/`, which is git-ignored. It is shared out-of-band (USB / file transfer).
-- **No API keys.** This project is 100% offline; if anyone needs a key, something was designed
-  wrong. Raise it first.
+- **No API keys in the repository.** The default build is 100% offline. Plan generation may
+  optionally run against the hosted nutrition agent ([ADR-0015](docs/adr/0015-hosted-nutrition-agent.md)),
+  and that key is supplied at build time with `--dart-define=QONPANIA_API_KEY=…` — never committed,
+  never given a default in the source. If you need any *other* key, raise it first.
 - **Only P1 edits `pubspec.yaml` and `main.dart`.** If you need a package, ask for it — do not
   add it yourself. `pubspec.yaml` is the #1 source of merge conflicts with 4 devs.
 - **Do not edit another owner's folders.** If your change crosses boundaries, ask in the chat.

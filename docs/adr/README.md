@@ -11,7 +11,7 @@ one (and update the old one's status).
 | ADR                                                        | Title                                             | Status   |
 |------------------------------------------------------------|---------------------------------------------------|----------|
 | [0001](./0001-record-architecture-decisions.md)            | Record architecture decisions                     | Accepted |
-| [0002](./0002-no-backend-on-device-only.md)                | No backend, on-device only                        | Accepted |
+| [0002](./0002-no-backend-on-device-only.md)                | No backend, on-device only                        | Amended by ADR-0015 |
 | [0003](./0003-android-as-primary-target.md)                | Android as the primary demo target                | Accepted |
 | [0004](./0004-flutter-gemma-over-mediapipe.md)             | On-device inference with flutter_gemma            | Accepted |
 | [0005](./0005-rag-instead-of-fine-tuning.md)               | RAG over the INS recipe book instead of fine-tuning | Accepted |
@@ -24,6 +24,7 @@ one (and update the old one's status).
 | [0012](./0012-iron-requirement-tables.md)                  | Iron requirement tables from INS/FAO-WHO          | Accepted |
 | [0013](./0013-local-persistence-schema.md)                 | Local persistence schema for profiles and plans   | Accepted |
 | [0014](./0014-free-text-ingredients-and-application-level-function-calling.md) | Free-text ingredients and application-level function calling | Accepted |
+| [0015](./0015-hosted-nutrition-agent.md)                   | Optional hosted nutrition agent for plan generation | Accepted |
 
 ## Template
 
