@@ -1,0 +1,8 @@
+# Solo formateo en pre-commit. `flutter analyze` tarda 10-30s y en un sprint de 6h
+# eso son minutos perdidos por commit x4 devs -> vive en CI, no aquí.
+pre-commit:
+  commands:
+    format:
+      glob: "*.dart"
+      run: dart format {staged_files}
+      stage_fixed: true
