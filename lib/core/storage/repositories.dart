@@ -25,6 +25,9 @@ abstract interface class PlanRepository {
   /// Most recent plan for a child, or null if none was ever generated.
   Future<WeeklyPlan?> latestFor(String childId);
 
+  /// All historical plans for a child, ordered by weekStart descending.
+  Future<List<WeeklyPlan>> findAllFor(String childId);
+
   Future<void> save(WeeklyPlan plan);
 
   /// Records whether a given day's recipe was actually prepared. Feeds the

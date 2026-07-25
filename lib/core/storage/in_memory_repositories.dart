@@ -35,14 +35,31 @@ class InMemoryProfileRepository implements ProfileRepository {
 }
 
 class InMemoryPlanRepository implements PlanRepository {
-  final Map<String, WeeklyPlan> _byChildId = {};
+  final Map<String, List<WeeklyPlan>> _byChildId = {};
 
   @override
-  Future<WeeklyPlan?> latestFor(String childId) async => _byChildId[childId];
+  Future<WeeklyPlan?> latestFor(String childId) async {
+    final list = _byChildId[childId];
+    if (list == null || list.isEmpty) return null;
+    final sorted = List<WeeklyPlan>.from(list)
+      ..sort((a, b) => b.weekStart.compareTo(a.weekStart));
+    return sorted.first;
+  }
+
+  @override
+  Future<List<WeeklyPlan>> findAllFor(String childId) async {
+    final list = _byChildId[childId];
+    if (list == null || list.isEmpty) return const [];
+    final sorted = List<WeeklyPlan>.from(list)
+      ..sort((a, b) => b.weekStart.compareTo(a.weekStart));
+    return sorted;
+  }
 
   @override
   Future<void> save(WeeklyPlan plan) async {
-    _byChildId[plan.childId] = plan;
+    final list = _byChildId.putIfAbsent(plan.childId, () => []);
+    list.removeWhere((p) => p.weekStart == plan.weekStart);
+    list.add(plan);
   }
 
   @override
@@ -52,10 +69,13 @@ class InMemoryPlanRepository implements PlanRepository {
     required int dayIndex,
     required bool prepared,
   }) async {
-    final plan = _byChildId[childId];
-    if (plan == null || plan.weekStart != weekStart) return;
+    final list = _byChildId[childId];
+    if (list == null) return;
+    final index = list.indexWhere((p) => p.weekStart == weekStart);
+    if (index == -1) return;
+    final plan = list[index];
 
-    _byChildId[childId] = WeeklyPlan(
+    list[index] = WeeklyPlan(
       childId: plan.childId,
       weekStart: plan.weekStart,
       days: [
