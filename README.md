@@ -1,86 +1,95 @@
 # Wawa Fuerte
 
-> App móvil **100% offline** que genera planes nutricionales semanales contra la anemia
-> infantil, con **Gemma corriendo on-device**. Sin backend, sin conectividad.
+> **100% offline** mobile app that generates weekly nutrition plans against childhood
+> anemia, with **Gemma running on-device**. No backend, no connectivity.
 >
-> Build with Gemma: GDG Callao · ODS 2 (Hambre Cero) y ODS 3 (Salud y Bienestar)
+> Build with Gemma: GDG Callao · SDG 2 (Zero Hunger) and SDG 3 (Good Health and Well-being)
 
-## El problema
+## The problem
 
-Perú tiene tasas críticas de anemia infantil, especialmente en zonas rurales y periurbanas
-donde las familias no siempre tienen presupuesto para suplementos caros o carne roja a diario
-— y donde la conectividad es intermitente o inexistente.
+Peru has critical rates of childhood anemia, especially in rural and peri-urban areas where
+families cannot always afford expensive supplements or daily red meat — and where connectivity
+is intermittent or non-existent.
 
-## La solución
+## The solution
 
-Una madre ingresa los ingredientes baratos disponibles en su región (sangrecita, bazo, quinua,
-tarwi, hígado) y su presupuesto. La app genera un menú semanal balanceado para elevar los
-niveles de hierro, calculando la cobertura real frente al requerimiento del niño según su edad.
+A mother enters the cheap ingredients available in her region (sangrecita, spleen, quinoa,
+tarwi, liver) and her budget. The app generates a balanced weekly menu to raise iron levels,
+computing the real coverage against the child's requirement for their age.
 
-**Todo corre dentro del teléfono**: el modelo, el recetario y la base de datos. Cero red.
+**Everything runs inside the phone**: the model, the recipe book and the database. Zero network.
 
-## Por qué es diferente
+## Why this is different
 
-- El [recetario del INS](https://anemia.ins.gob.pe/recetario-de-ninos) es oficial pero
-  **estático**: no se personaliza según lo que la familia realmente tiene.
-- Apps internacionales de nutrición con IA no cubren **ingredientes andinos/amazónicos**
-  ni contextos sin conectividad.
-- Nosotros combinamos las tres cosas que nadie junta: generación dinámica + ingredientes
-  locales de bajo costo + funcionamiento **genuinamente offline**.
+- The [INS recipe book](https://anemia.ins.gob.pe/recetario-de-ninos) is official but
+  **static**: it does not adapt to what the family actually has.
+- International AI nutrition apps cover neither **Andean/Amazonian ingredients** nor
+  contexts without connectivity.
+- We combine the three things nobody puts together: dynamic generation + low-cost local
+  ingredients + **genuinely offline** operation.
 
-## Arquitectura
+## Architecture
 
-Sin servidor. Todo local:
+No server. Everything local:
 
 ```
-[Assets empaquetados]
-├── recetario_ins.json           → recetas oficiales del INS
-├── ingredientes_regionales.json → ingredientes por región/temporada/costo
-└── embeddings_recetas.db        → PRECALCULADO (BLOB en SQLite)
+[Bundled assets]
+├── recetario_ins.json           → official INS recipes
+├── ingredientes_regionales.json → ingredients by region/season/cost
+└── embeddings_recetas.db        → PRECOMPUTED (BLOB in SQLite)
 
-[Generado en el dispositivo]
-├── perfil_nino        → soporta VARIOS niños por familia
-├── planes_generados   → historial y cumplimiento
-└── foto temporal      → nunca se guarda, se procesa y descarta
+[Generated on the device]
+├── perfil_nino        → supports SEVERAL children per family
+├── planes_generados   → history and adherence
+└── temporary photo    → never stored, processed and discarded
 ```
 
-Gemma **no se entrena ni se hace fine-tuning** — se usa pre-entrenado y se especializa vía
-**prompting + RAG** con el recetario del INS, lo que evita alucinaciones nutricionales.
+Gemma is **neither trained nor fine-tuned** — it is used pre-trained and specialised via
+**prompting + RAG** over the INS recipe book, which avoids nutritional hallucinations.
 
-## Empezar
+## Getting started
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-> ⚠️ La inferencia real de Gemma requiere un **iPhone físico**. El simulador de iOS es
-> CPU-only con tope de 256 MB de Metal y no puede correr el modelo. Para desarrollar UI
-> sin el modelo, usa el `FakeInferenceService`.
+> ⚠️ **Android is the primary target** ([ADR-0003](docs/adr/0003-android-as-primary-target.md)):
+> the demo runs on a **physical Android phone**. Real Gemma inference cannot run on a simulator
+> or emulator — it needs real hardware. To develop UI and logic without the model, use the
+> `FakeInferenceService` — on the macOS machine that runs against the iOS Simulator. iOS remains
+> buildable as a bonus, not as a deliverable.
 
-El modelo `.task` **no está en el repo** (pesa > 1 GB) — se comparte por AirDrop/USB y va
-en `assets/models/`, que está git-ignored.
+The `.task` model is **not in the repo** (it weighs > 1 GB) — it is shared out-of-band (USB /
+file transfer) and goes into `assets/models/`, which is git-ignored.
 
-## Documentación
+## Documentation
 
-| Documento | Contenido |
+| Document | Contents |
 |---|---|
-| [AGENTS.md](AGENTS.md) | Contrato de trabajo, estructura de carpetas, quién toca qué |
-| [docs/FLOWS.md](docs/FLOWS.md) | Flujos de usuario con datos exactos por pantalla |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Bitácora de decisiones técnicas |
+| [AGENTS.md](AGENTS.md) | Working agreement, folder structure, who touches what |
+| [docs/FLOWS.md](docs/FLOWS.md) | User flows with the exact data per screen |
+| [docs/adr/](docs/adr/README.md) | Architecture Decision Records — the source of truth for technical decisions |
 
-## Equipo
+## Team
 
-| Rol | Área | Dueño |
-|---|---|---|
-| P1 | Motor de inferencia (Gemma + MediaPipe), `pubspec.yaml` | _(por asignar)_ |
-| P2 | RAG + cálculo nutricional | _(por asignar)_ |
-| P3 | UI, pantallas, TTS | _(por asignar)_ |
-| P4 | Datos y persistencia local | _(por asignar)_ |
+| Role | Area | Owner | Hardware |
+|---|---|---|---|
+| P1 | Inference engine (Gemma + MediaPipe), `pubspec.yaml`, `main.dart`, `android/` | [@sharvel-irigoyen](https://github.com/sharvel-irigoyen) — Javier Sharvel | Windows + Android |
+| P2 | RAG + nutrition calculation, `ios/`, tech lead | [@jhosepmyr](https://github.com/jhosepmyr) — Jhosepmyr Orlando Gutierrez Soto | macOS + iPhone |
+| P3 | UI, screens, TTS | [@farioraro](https://github.com/farioraro) — Carlos Alberto Ochoa Colonio | Windows + Android |
+| P4 | Data and local persistence | [@Eric396](https://github.com/Eric396) — Eric Hernández | Windows + Android |
 
-## Licencias
+The inference module belongs to an Android developer on purpose: real inference can only be
+validated on a physical handset, and three of the four devs have one
+([ADR-0003](docs/adr/0003-android-as-primary-target.md)). The macOS machine does not install the
+Android SDK; it owns the pure-Dart work (RAG, nutrition), which is verified with `flutter test`
+and the iOS Simulator. These owners must stay in sync with
+[`.github/CODEOWNERS`](.github/CODEOWNERS).
 
-- **Código de la app**: Apache License 2.0 — ver [LICENSE](LICENSE).
-- **Modelo Gemma**: sujeto a los [Términos de Uso de Gemma](https://ai.google.dev/gemma/terms)
-  de Google, incluida su Política de Uso Prohibido. No cubiertos por la licencia de este repo.
-- **Datos del recetario**: [Instituto Nacional de Salud (INS) — Perú](https://anemia.ins.gob.pe/recetario-de-ninos).
+## Licensing
+
+- **App code**: Apache License 2.0 — see [LICENSE](LICENSE).
+- **Gemma model**: subject to Google's [Gemma Terms of Use](https://ai.google.dev/gemma/terms),
+  including its Prohibited Use Policy. Not covered by this repository's license.
+- **Recipe book data**: [Instituto Nacional de Salud (INS) — Peru](https://anemia.ins.gob.pe/recetario-de-ninos).

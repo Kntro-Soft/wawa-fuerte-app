@@ -1,69 +1,96 @@
 # AGENTS.md
 
-Contrato de trabajo para los 4 devs (y para agentes de IA que toquen este repo).
-**Sprint de 6 horas. Prioridad: que la demo corra en el iPhone. No la pureza arquitectónica.**
+Working agreement for the 4 devs (and for any AI agent touching this repo).
+**6-hour sprint. Priority: get the demo running on a physical Android phone. Not architectural
+purity.**
 
 ## Purpose
 
-App móvil Flutter que genera planes nutricionales semanales contra la anemia infantil,
-usando **Gemma corriendo 100% on-device**. **No hay backend, no hay red.**
-Todo (modelo, recetario, base de datos) vive dentro del dispositivo.
+Flutter mobile app that generates weekly nutrition plans against childhood anemia,
+using **Gemma running 100% on-device**. **There is no backend and no network.**
+Everything (model, recipe book, database) lives inside the device.
 
 ## Big Picture
 
-- Flutter estable + Dart 3. Estado: **decidido en el minuto 0** → ver `docs/DECISIONS.md`.
-- Inferencia: `flutter_gemma` sobre MediaPipe LLM Inference API. **iPhone físico obligatorio**
-  (el simulador es CPU-only con tope de 256 MB de Metal → no corre el modelo).
-- El modelo Gemma es una caja negra pre-entrenada: **no se entrena ni se hace fine-tuning**.
-  Se especializa vía **prompting + RAG** con el recetario del INS.
+- Flutter stable + Dart 3. State management: **decided at minute 0** →
+  see [ADR-0009](docs/adr/0009-state-management.md).
+- **Android is the primary target** ([ADR-0003](docs/adr/0003-android-as-primary-target.md)). The
+  demo runs on a physical Android phone; CI, testing and the "does it work" bar are defined
+  against Android. iOS stays buildable as a bonus, not as a deliverable.
+- Inference: `flutter_gemma` over the MediaPipe LLM Inference API
+  ([ADR-0004](docs/adr/0004-flutter-gemma-over-mediapipe.md)). **A physical phone is mandatory**
+  — no simulator or emulator can run the model (the iOS Simulator is CPU-only with a 256 MB Metal
+  cap). This is why P1 (inference) is one of the Android devs.
+- The Gemma model is a pre-trained black box: **it is neither trained nor fine-tuned**.
+  It is specialised via **prompting + RAG** over the INS recipe book
+  ([ADR-0005](docs/adr/0005-rag-instead-of-fine-tuning.md)).
+- The **ADRs in `docs/adr/` are the source of truth**. If this file contradicts an ADR, the ADR
+  wins and this file gets fixed.
+
+## Who is who
+
+| Role | Area | Owner | Hardware |
+|---|---|---|---|
+| P1 | Inference, `pubspec.yaml`, `main.dart`, `android/` | @sharvel-irigoyen | Windows + Android |
+| P2 | RAG + nutrition, `ios/`, tech lead | @jhosepmyr | macOS + iPhone |
+| P3 | UI, screens, TTS | @farioraro | Windows + Android |
+| P4 | Data and local persistence | @Eric396 | Windows + Android |
+
+The three Windows devs install Flutter + the Android SDK and test on their own handsets. The
+macOS dev does **not** install the Android SDK and develops non-inference work against the iOS
+Simulator, which Xcode already provides. Anything platform-specific (permissions, file paths, TTS
+voices) must be checked on Android before it counts as done, even if it looked fine on iOS.
 
 ```
 lib/
   core/
-    inference/   # Gemma + MediaPipe.        DUEÑO: P1
-    rag/         # búsqueda de recetas.      DUEÑO: P2
-    nutrition/   # cálculo de hierro.        DUEÑO: P2
-    storage/     # SQLite/Hive local.        DUEÑO: P4
-    theme/       # colores, tipografía.      DUEÑO: P3
+    inference/   # Gemma + MediaPipe.        OWNER: P1
+    rag/         # recipe search.            OWNER: P2
+    nutrition/   # iron calculation.         OWNER: P2
+    storage/     # local SQLite/Hive.        OWNER: P4
+    theme/       # colors, typography.       OWNER: P3
   features/
-    onboarding/  # Flujo 0 + A.              DUEÑO: P3
-    home/        # Flujo E (selector niños). DUEÑO: P3
-    plan/        # Flujo B + D.              DUEÑO: P3
-  main.dart                                # DUEÑO: P1
+    onboarding/  # Flow 0 + A.               OWNER: P3
+    home/        # Flow E (child selector).  OWNER: P3
+    plan/        # Flow B + D.               OWNER: P3
+  main.dart                                # OWNER: P1
 assets/
-  data/          # recetario_ins.json, etc.  DUEÑO: P4
-  models/        # .task de Gemma (git-ignored, pesa >1GB)
+  data/          # recetario_ins.json, etc.  OWNER: P4
+  models/        # Gemma .task (git-ignored, >1GB)
 ```
 
-## Reglas que no se negocian
+## Non-negotiable rules
 
-- **Nadie commitea el modelo `.task`** — pesa más de 1 GB y revienta el repo. Va en
-  `assets/models/` que está git-ignored. Se comparte por AirDrop/USB entre los devs.
-- **Nada de API keys.** Este proyecto es 100% offline; si alguien necesita una key, algo
-  se diseñó mal. Consúltalo antes.
-- **Solo P1 edita `pubspec.yaml` y `main.dart`.** Si necesitas un paquete, pídeselo — no lo
-  agregues tú. `pubspec.yaml` es la fuente #1 de conflictos de merge con 4 devs.
-- **No edites carpetas de otro dueño.** Si tu cambio cruza fronteras, pídelo por el chat.
-- **`main` siempre compila.** Si tu PR rompe el arranque, se revierte — no se debuggea en `main`.
-- **El dato de hemoglobina es OPCIONAL en todo el código.** Nunca asumas que existe; la app
-  debe generar un plan preventivo estándar por edad cuando es `null`. Ver `docs/FLOWS.md`.
+- **Nobody commits the `.task` model** — it weighs more than 1 GB and blows up the repo. It goes
+  in `assets/models/`, which is git-ignored. It is shared out-of-band (USB / file transfer).
+- **No API keys.** This project is 100% offline; if anyone needs a key, something was designed
+  wrong. Raise it first.
+- **Only P1 edits `pubspec.yaml` and `main.dart`.** If you need a package, ask for it — do not
+  add it yourself. `pubspec.yaml` is the #1 source of merge conflicts with 4 devs.
+- **Do not edit another owner's folders.** If your change crosses boundaries, ask in the chat.
+- **`main` always builds.** If your PR breaks startup it gets reverted — `main` is not where we
+  debug.
+- **The hemoglobin value is OPTIONAL everywhere in the code.** Never assume it exists; the app
+  must generate a standard age-based preventive plan when it is `null`. See `docs/FLOWS.md`.
 
-## Trabajar en paralelo sin bloquearse
+## Working in parallel without blocking each other
 
-Las primeras horas **todos trabajan contra mocks**, nadie espera a nadie:
+For the first hours **everyone works against mocks**, nobody waits for anybody:
 
-- P3 (UI) usa un `FakeInferenceService` que devuelve un plan hardcodeado.
-- P2 (RAG) prueba su búsqueda con un `recetario_ins.json` de 5 recetas de ejemplo.
-- P1 valida Gemma en el iPhone con un prompt suelto, sin depender de la UI.
-- P4 arma el esquema de datos y lo llena con seeds.
+- P3 (UI) uses a `FakeInferenceService` that returns a hardcoded plan.
+- P2 (RAG) tests search against a `recetario_ins.json` with 5 sample recipes.
+- P1 validates Gemma on a physical Android phone with a standalone prompt, without depending on
+  the UI. Native linking is the highest-risk task of the sprint: validate it in hour 1.
+- P4 builds the data schema and fills it with seeds.
 
-La integración real es en el **checkpoint de la hora 4**, no antes.
+Real integration happens at the **hour-4 checkpoint**, not before.
 
-## Comandos
+## Commands
 
 ```
 flutter pub get
-flutter run                  # simulador (UI) o iPhone físico (Gemma real)
+flutter run                  # physical Android phone (real Gemma) or,
+                             # on the macOS machine, the iOS Simulator with the fake service
 dart format .
 flutter analyze
 flutter test
@@ -71,16 +98,16 @@ flutter test
 
 ## Working Agreement
 
-- Antes de crear una pantalla nueva, abre la más parecida que ya exista y **copia su
-  estructura de carpetas, nombres y forma de widget**. La consistencia vale más que la elegancia.
-- Ante conflicto entre este archivo y el código: **gana el código**. Actualiza este archivo.
-- **Ramas (Gitflow)**: `main` (release/demo) ← `develop` (integración) ← `feature/*`, `bugfix/*`,
-  `hotfix/*`. Nunca commitees directo a `main` ni a `develop`. Los prefijos de rama son SOLO esos:
-  `chore`, `docs`, `ci` son tipos de commit, **no** prefijos de rama.
-- **Commits**: Conventional Commits, `<tipo>(<área>): descripción` — ej.
-  `feat(plan): add iron coverage calculation`. Áreas: `inference`, `rag`, `nutrition`, `storage`,
+- Before creating a new screen, open the closest existing one and **copy its folder structure,
+  naming and widget shape**. Consistency is worth more than elegance.
+- If this file and the code disagree: **the code wins**. Update this file.
+- **Branches (Gitflow)**: `main` (release/demo) ← `develop` (integration) ← `feature/*`,
+  `bugfix/*`, `hotfix/*`. Never commit directly to `main` or `develop`. Those are the ONLY branch
+  prefixes: `chore`, `docs`, `ci` are commit types, **not** branch prefixes.
+- **Commits**: Conventional Commits, `<type>(<scope>): description` — e.g.
+  `feat(plan): add iron coverage calculation`. Scopes: `inference`, `rag`, `nutrition`, `storage`,
   `onboarding`, `home`, `plan`, `ci`, `docs`.
-- **Commits atómicos**: un cambio lógico por commit. Nada de commits grandes que mezclan cosas —
-  no se pueden revisar ni revertir por separado.
-- CODEOWNERS notifica al dueño del área, pero **no bloquea el merge** (bloquearía a 4 devs que están
-  todos codeando a la vez). El gate es el CI en rojo, no una persona.
+- **Atomic commits**: one logical change per commit. No large commits mixing things together —
+  they cannot be reviewed or reverted separately.
+- CODEOWNERS notifies the area owner but **does not block the merge** (it would block 4 devs who
+  are all coding at once). The gate is a red CI, not a person.

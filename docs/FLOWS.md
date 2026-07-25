@@ -1,47 +1,52 @@
-# Flujos de usuario — Wawa Fuerte
+# User flows — Wawa Fuerte
 
-Especificación de pantallas y datos. **Frontend y lógica local trabajan de este documento.**
+Screen and data specification. **The UI and the local logic work from this document.**
 
-> **Vocabulario**: no hay servidor. Cuando dice "el sistema calcula/guarda", es la **capa de
-> lógica local del dispositivo** (módulos de P2 y P4), no un backend remoto.
+> **Vocabulary**: there is no server. Where it says "the system computes/stores", that means the
+> **local logic layer on the device** (the P2 and P4 modules), not a remote backend.
+>
+> **Language**: this document is written in English, but the strings quoted in `"…"` are the
+> literal in-app copy shown to the user and stay in Spanish — the app's users are Spanish-speaking
+> families in Peru. Field names (`perfil_nino`, `hemoglobina_valor`, …) are identifiers, not prose,
+> and stay as they are in the code.
 
-## Regla base sobre el Carné CRED
+## Base rule about the CRED booklet
 
-El Carné de Crecimiento y Desarrollo (CRED) es un **documento físico universal** que el MINSA
-entrega a todo niño desde su primer control — no solo a quienes tienen anemia. Pero no toda
-familia lo tiene a la mano o actualizado.
+The *Carné de Crecimiento y Desarrollo* (CRED) is a **universal physical document** that MINSA
+issues to every child from their first check-up — not only to those who already have anemia. But
+not every family has it at hand or up to date.
 
-Por eso: **la hemoglobina nunca es obligatoria ni bloqueante.** El requerimiento de hierro
-depende de la **edad** (tabla nutricional fija INS/OMS), no de la hemoglobina. La hemoglobina
-solo sirve para *priorizar urgencia*. Sin ella, la app genera un plan preventivo estándar.
+Therefore: **hemoglobin is never mandatory and never blocking.** The iron requirement depends on
+**age** (fixed INS/WHO nutritional table), not on hemoglobin. Hemoglobin only serves to *prioritise
+urgency*. Without it, the app generates a standard preventive plan.
 
 ---
 
-## Flujo 0 — Apertura de la app (no es login real)
+## Flow 0 — Opening the app (not a real login)
 
-No hay cuenta ni contraseña: no hay servidor con quien autenticar. Solo personaliza el saludo
-si el celular es compartido en la familia.
+There is no account and no password: there is no server to authenticate against. It only
+personalises the greeting when the phone is shared within the family.
 
-| # | Dato pedido | Tipo | Obligatorio | Quién construye |
+| # | Data requested | Type | Required | Who builds it |
 |---|---|---|---|---|
-| 1 | Nombre de la madre/cuidador | texto libre | No (default "Usuario") | P3 (UI) → P4 (`perfil_familia`) |
+| 1 | Mother's/caregiver's name | free text | No (defaults to "Usuario") | P3 (UI) → P4 (`perfil_familia`) |
 
-Si ya existe perfil guardado, salta directo al **Flujo E (Home)**.
+If a saved profile already exists, jump straight to **Flow E (Home)**.
 
-## Flujo A — Registro de un niño/a (se repite por cada hijo/a)
+## Flow A — Registering a child (repeated for each child)
 
-| # | Dato pedido | Tipo | Obligatorio | Uso |
+| # | Data requested | Type | Required | Use |
 |---|---|---|---|---|
-| 1 | Nombre/apodo | texto libre | Sí | Display |
-| 2 | Fecha de nacimiento (o edad en meses) | date / numérico | Sí | **Crítico**: determina el requerimiento estándar de hierro |
-| 3 | Sexo | M / F / prefiero no decir | No | Ajuste fino de la tabla |
-| 4 | Región | Costa / Sierra / Selva | Sí | Filtra ingredientes regionales en Flujo B |
-| 5 | **¿Tienes a la mano el Carné CRED?** | Sí / No / No sé qué es | — | Si No → **salta al paso 8**, la app sigue funcionando |
-| 6 | *(solo si Sí)* Hemoglobina (g/dL) | numérico | No | Activa modo personalizado |
-| 7 | *(solo si Sí)* Fecha del último control | date | No | Se muestra como referencia ("dato de hace 2 meses") |
-| 8 | Guardar perfil | botón | — | P4 escribe en `perfil_nino` |
+| 1 | Name/nickname | free text | Yes | Display |
+| 2 | Date of birth (or age in months) | date / number | Yes | **Critical**: determines the standard iron requirement |
+| 3 | Sex | M / F / prefer not to say | No | Fine-tunes the table |
+| 4 | Region | Coast / Highlands / Jungle | Yes | Filters regional ingredients in Flow B |
+| 5 | **Do you have the CRED booklet at hand?** | Yes / No / I don't know what that is | — | If No → **skip to step 8**, the app keeps working |
+| 6 | *(only if Yes)* Hemoglobin (g/dL) | number | No | Enables personalised mode |
+| 7 | *(only if Yes)* Date of the last check-up | date | No | Shown as a reference ("reading from 2 months ago") |
+| 8 | Save profile | button | — | P4 writes to `perfil_nino` |
 
-**Multi-niño**: sin límite. Desde el Home siempre hay "+ Agregar otro niño/a".
+**Multi-child**: no limit. The Home always offers "+ Agregar otro niño/a".
 
 ```
 perfil_nino
@@ -50,64 +55,64 @@ perfil_nino
   hemoglobina_valor: nullable, hemoglobina_fecha: nullable }
 ```
 
-## Flujo E — Home
+## Flow E — Home
 
-| Elemento | Contenido |
+| Element | Contents |
 |---|---|
-| Selector de perfiles | Lista de niños registrados → toca uno para ir a su Flujo B |
-| Botón | "+ Agregar otro niño/a" → Flujo A |
-| Resumen (si ya hubo planes) | Ver Flujo D |
+| Profile selector | List of registered children → tap one to go to their Flow B |
+| Button | "+ Agregar otro niño/a" → Flow A |
+| Summary (if there are past plans) | See Flow D |
 
-## Flujo B — Generar plan semanal (**el core del MVP**)
+## Flow B — Generate the weekly plan (**the core of the MVP**)
 
-| # | Dato pedido | Tipo | Obligatorio | Procesa |
+| # | Data requested | Type | Required | Processed by |
 |---|---|---|---|---|
-| 1 | Ingredientes disponibles | checklist multi-select (precargado por región) + "otro" libre | Sí (mín. 1) | P2 filtra el RAG |
-| 2 | Presupuesto semanal (S/) | numérico | Sí | P2 como restricción |
-| — | edad, región, hemoglobina | *(auto, del perfil)* | — | P1/P2 |
+| 1 | Available ingredients | multi-select checklist (preloaded by region) + free-text "other" | Yes (min. 1) | P2 filters the RAG |
+| 2 | Weekly budget (S/) | number | Yes | P2, as a constraint |
+| — | age, region, hemoglobin | *(automatic, from the profile)* | — | P1/P2 |
 
-**Al presionar "Generar mi plan":**
+**On pressing "Generar mi plan":**
 
 ```
 P2 → buscarRecetasRelevantes(ingredientes, presupuesto, edad, region)
-     → top 5 recetas del recetario INS (RAG local)
+     → top 5 recipes from the INS recipe book (local RAG)
 
-P1 → Gemma genera el plan de 7 días con esas recetas como contexto:
-     - CON hemoglobina: "déficit de X mg, prioriza densidad de hierro"
-     - SIN hemoglobina: "plan preventivo estándar para edad X,
-       requerimiento diario Y mg" (tabla fija)
+P1 → Gemma generates the 7-day plan with those recipes as context:
+     - WITH hemoglobin: "deficit of X mg, prioritise iron density"
+     - WITHOUT hemoglobin: "standard preventive plan for age X,
+       daily requirement Y mg" (fixed table)
 
 P2 → calcularHierroTotal(plan) vs requerimientoEstandarPorEdad(edad)
-     → % de cobertura (funciona CON o SIN hemoglobina)
+     → % coverage (works WITH or WITHOUT hemoglobin)
 ```
 
-**Pantalla de resultado:**
+**Result screen:**
 
-| Elemento | Fuente |
+| Element | Source |
 |---|---|
-| Plan de 7 recetas | Gemma (P1) |
-| % cobertura de hierro semanal | P2 |
-| Aviso si no hay hemoglobina | "Plan preventivo estándar — agrega el dato de tu Carné CRED para mayor precisión" |
-| Botón 🔊 por receta | TTS local (P3) |
-| Checkbox "Preparado" por día | P4 → `planes_generados` |
+| Plan of 7 recipes | Gemma (P1) |
+| Weekly iron coverage % | P2 |
+| Notice when there is no hemoglobin | "Plan preventivo estándar — agrega el dato de tu Carné CRED para mayor precisión" |
+| 🔊 button per recipe | Local TTS (P3) |
+| "Preparado" checkbox per day | P4 → `planes_generados` |
 
-## Flujo C — Foto de ingredientes (STRETCH GOAL)
+## Flow C — Ingredient photo (STRETCH GOAL)
 
-| # | Dato | Tipo |
+| # | Data | Type |
 |---|---|---|
-| 1 | Foto de despensa/mercado | cámara — reemplaza el paso 1 del Flujo B |
-| 2 | Confirmar/editar ingredientes detectados | checklist **siempre editable** (el modelo puede fallar) |
+| 1 | Photo of the pantry/market | camera — replaces step 1 of Flow B |
+| 2 | Confirm/edit the detected ingredients | **always editable** checklist (the model can get it wrong) |
 
-La imagen se procesa en memoria y **se descarta** — nunca se guarda en disco.
+The image is processed in memory and **discarded** — it is never written to disk.
 
-⚠️ **No es requisito del MVP.** Solo después del checkpoint de la hora 4 y si van adelantados.
+⚠️ **Not an MVP requirement.** Only after the hour-4 checkpoint and only if the team is ahead.
 
-## Flujo D — Seguimiento semanal
+## Flow D — Weekly follow-up
 
-| Elemento | Fuente |
+| Element | Source |
 |---|---|
-| "Cumpliste 5 de 7 recetas la semana pasada" | P4 lee `planes_generados` |
-| "Recibió ~27mg de hierro de una meta de 35mg" | P2 recalcula |
-| Ajuste del siguiente plan | Si quedó bajo, P2 prioriza mayor densidad de hierro |
+| "Cumpliste 5 de 7 recetas la semana pasada" | P4 reads `planes_generados` |
+| "Recibió ~27mg de hierro de una meta de 35mg" | P2 recomputes |
+| Adjusting the next plan | If it fell short, P2 prioritises higher iron density |
 
-No pide datos nuevos — solo lectura + recálculo al volver al Flujo B.
+It asks for no new data — only reading + recomputation when returning to Flow B.
