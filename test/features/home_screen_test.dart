@@ -40,6 +40,10 @@ void main() {
 
       expect(find.text('Rosita'), findsOneWidget);
       expect(find.text('Manuelito'), findsOneWidget);
+      // Each card now carries its own "Editar"/"Borrar" row, so three of them
+      // no longer fit one viewport. The list still holds every child; it is
+      // the screen that ran out, exactly as it does for a real family.
+      await scrollTo(tester, find.text('Ana Lucía'));
       expect(find.text('Ana Lucía'), findsOneWidget);
     });
 

@@ -79,6 +79,41 @@ abstract final class AppColors {
   static const Color errorContainer = Color(0xFFFFD9D3);
   static const Color onErrorContainer = Color(0xFF5C0F0F);
 
+  // --- Earth accents: identity, never state. ----------------------------------
+  //
+  // These came later than the eleven above and they are governed by one rule:
+  // **nothing here ever means anything.** They group a section, give a screen a
+  // recognisable top edge, and tell one child's card from her sister's. They
+  // never say "selected", "done", "wrong" or "urgent" — [primary], [success],
+  // [warning] and [error] keep that job exclusively, and they keep it alone so
+  // that a new hue can never be mistaken for a new meaning.
+  //
+  // The hues are pigments rather than screen colours: fired clay, dry earth,
+  // ochre, the green of a highland field. Peru without the postcard. Still no
+  // blue, no teal, no purple, and no gradient — the palette doc above stands.
+
+  /// Deep earth brown. Headers and section rules. 9:1 on [surface].
+  static const Color earth = Color(0xFF4E3524);
+
+  /// The tinted band an earth-toned header sits on.
+  static const Color earthContainer = Color(0xFFF4EADF);
+  static const Color onEarthContainer = Color(0xFF3B2716);
+
+  /// Fired clay. The warmest accent, and the one closest to [primary] — it is
+  /// used for large flat areas and never for a control, so the two cannot be
+  /// confused at the size where it matters. 5.4:1 on [surface].
+  static const Color clay = Color(0xFF9A4A2B);
+
+  /// Dry ochre, the same pigment family as [warning].
+  static const Color ochre = Color(0xFF8A5300);
+
+  /// Highland field green, distinctly darker and duller than [success] so the
+  /// achievement green stays the only green that reports anything. 7.4:1.
+  static const Color andean = Color(0xFF3F5230);
+
+  /// Unbleached wool. Fills only; never carries text.
+  static const Color sand = Color(0xFFE9DCC6);
+
   // --- Borders. ---------------------------------------------------------------
 
   /// Every card and field carries a 1 dp [outline]. A shadow is never the only
