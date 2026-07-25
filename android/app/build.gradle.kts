@@ -19,10 +19,19 @@ android {
         applicationId = "com.kntrosoft.wawafuerte"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // .litertlm needs API 30+ Bionic syscalls that cannot be shimmed on
+        // older devices (ADR-0004). This is a real reduction in reach: it rules
+        // out Android 10 and below, which our target user may well be running.
+        minSdk = 30
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // The inference runtime only ships arm64 binaries. Without this the APK
+        // carries unusable ABIs and grows for nothing.
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     buildTypes {

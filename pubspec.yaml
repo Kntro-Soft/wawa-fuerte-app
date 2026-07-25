@@ -56,6 +56,8 @@ dependencies:
   # a caregiver with wet hands, or one who does not read fluently, listens
   # instead of reading.
   flutter_tts: ^4.2.0
+  flutter_gemma: ^1.3.2
+  flutter_gemma_litertlm: ^1.2.0
 
 dev_dependencies:
   flutter_test:

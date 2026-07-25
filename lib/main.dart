@@ -17,20 +17,36 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
 
 import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
 import 'core/rag/fake_recipe_retriever.dart';
-import 'core/storage/in_memory_repositories.dart';
+import 'core/storage/database.dart';
+import 'core/storage/sqlite_repositories.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // flutter_gemma registers NO inference engine by default — they are fully
+  // opt-in, and without this the first generation fails with "FlutterGemma not
+  // initialized". Cheap: it only registers the engine, it does not touch the
+  // weights, so startup stays fast even though the model is over half a gigabyte.
+  if (gemmaModelPath.isNotEmpty) {
+    await FlutterGemma.initialize(inferenceEngines: [LiteRtLmEngine()]);
+  }
+
   // Constructed here so startup can read from them before the tree exists, then
   // handed to AppProviders — one instance each, no shadowing (ADR-0009).
-  final profiles = InMemoryProfileRepository();
-  final plans = InMemoryPlanRepository();
+  //
+  // SQLite, not the in-memory fakes: everything a caregiver enters has to
+  // survive closing the app. The whole multi-child model and the weekly
+  // follow-up in Flow D are meaningless if the profiles vanish (ADR-0013).
+  final database = await openAppDatabase();
+  final profiles = SqliteProfileRepository(database);
+  final plans = SqlitePlanRepository(database);
   final retriever = FakeRecipeRetriever();
 
   await retriever.load();
