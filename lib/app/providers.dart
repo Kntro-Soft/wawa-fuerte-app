@@ -23,6 +23,7 @@ import 'package:provider/provider.dart';
 import '../core/domain/generate_weekly_plan.dart';
 import '../core/inference/fake_inference_service.dart';
 import '../core/inference/gemma_inference_service.dart';
+import '../core/inference/hybrid_inference_service.dart';
 import '../core/inference/inference_service.dart';
 import '../core/inference/qonpania_inference_service.dart';
 import '../core/nutrition/iron_calculator.dart';
@@ -151,17 +152,22 @@ class PlanPipeline {
 /// with neither a key nor the 557 MB file still get a running app — which is
 /// the whole reason [InferenceService] is an interface (ADR-0004).
 PlanPipeline defaultPlanPipeline({QonpaniaClient? qonpania}) {
+  final localInference = gemmaModelPath.isEmpty
+      ? FakeInferenceService()
+      : GemmaInferenceService(modelPath: gemmaModelPath);
+
   if (qonpania != null) {
     return PlanPipeline(
-      inference: QonpaniaInferenceService(qonpania),
+      inference: HybridInferenceService(
+        primary: QonpaniaInferenceService(qonpania),
+        fallback: localInference,
+      ),
       parser: const QonpaniaPlanParser(),
     );
   }
 
   return PlanPipeline(
-    inference: gemmaModelPath.isEmpty
-        ? FakeInferenceService()
-        : GemmaInferenceService(modelPath: gemmaModelPath),
+    inference: localInference,
     parser: const SimplePlanParser(),
   );
 }

@@ -41,17 +41,27 @@ class GemmaInferenceService implements InferenceService {
   Future<void> warmUp() async {
     if (_model != null) return;
 
-    if (!File(modelPath).existsSync()) {
-      throw StateError(
-        'Gemma weights not found at $modelPath. The .litertlm file is shared '
-        'out-of-band and is never committed (ADR-0004).',
-      );
-    }
+    final isNetworkUrl =
+        modelPath.startsWith('http://') || modelPath.startsWith('https://');
 
-    await FlutterGemma.installModel(
-      modelType: ModelType.gemmaIt,
-      fileType: ModelFileType.litertlm,
-    ).fromFile(modelPath).install();
+    if (isNetworkUrl) {
+      await FlutterGemma.installModel(
+        modelType: ModelType.gemmaIt,
+        fileType: ModelFileType.litertlm,
+      ).fromNetwork(modelPath).install();
+    } else {
+      if (!File(modelPath).existsSync()) {
+        throw StateError(
+          'Gemma weights not found at $modelPath. The .litertlm file is shared '
+          'out-of-band or via URL and is never committed (ADR-0004).',
+        );
+      }
+
+      await FlutterGemma.installModel(
+        modelType: ModelType.gemmaIt,
+        fileType: ModelFileType.litertlm,
+      ).fromFile(modelPath).install();
+    }
 
     _model = await FlutterGemma.getActiveModel(
       maxTokens: maxTokens,
