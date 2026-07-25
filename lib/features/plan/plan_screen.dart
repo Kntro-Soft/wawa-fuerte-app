@@ -19,9 +19,11 @@ import '../../app/route_arguments.dart';
 import '../../app/routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/andean_band.dart';
 import '../../core/widgets/food_chip.dart';
 import '../../core/widgets/iron_coverage_bar.dart';
 import '../../core/widgets/notice_banner.dart';
+import '../../core/widgets/section_heading.dart';
 import 'pantry_options.dart';
 import 'plan_controller.dart';
 import 'widgets/plan_generating_view.dart';
@@ -125,7 +127,10 @@ class _PlanFormState extends State<_PlanForm> {
           const SizedBox(height: AppSpacing.xl),
         ],
 
-        Text('¿Qué tienes en casa?', style: theme.textTheme.headlineSmall),
+        const SectionHeading(
+          icon: LucideIcons.shoppingBasket600,
+          title: '¿Qué tienes en casa?',
+        ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'Toca todo lo que tengas. Puedes tocar varios.',
@@ -161,9 +166,9 @@ class _PlanFormState extends State<_PlanForm> {
         ),
         const SizedBox(height: AppSpacing.xxl),
 
-        Text(
-          '¿Cuánto puedes gastar esta semana?',
-          style: theme.textTheme.headlineSmall,
+        const SectionHeading(
+          icon: LucideIcons.wallet600,
+          title: '¿Cuánto puedes gastar esta semana?',
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -293,9 +298,13 @@ class _PlanResult extends StatelessWidget {
           'El menú de ${controller.child.name}',
           style: theme.textTheme.headlineLarge,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sm),
+        const AndeanBand(),
+        const SizedBox(height: AppSpacing.xl),
 
-        // Guards `hasOfficialRequirement` internally — see IronCoverageBar.
+        // The loudest thing on the screen, and deliberately above the recipes:
+        // it is the answer, they are the working. Guards
+        // `hasOfficialRequirement` internally — see IronCoverageBar.
         IronCoverageBar(coverage: plan.coverage, ageMonths: ageMonths),
         const SizedBox(height: AppSpacing.lg),
 
@@ -309,8 +318,13 @@ class _PlanResult extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
         ],
 
-        // The weight of this screen is here: seven big rows, each opening a
-        // recipe with its listen button.
+        const SectionHeading(
+          icon: LucideIcons.calendarDays600,
+          title: 'Las comidas de la semana',
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Seven big rows, each opening a recipe with its listen button.
         for (final day in plan.days) ...[
           RecipeRow(
             day: day,

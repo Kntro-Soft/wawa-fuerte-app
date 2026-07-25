@@ -76,10 +76,14 @@ class RecipeRow extends StatelessWidget {
                     children: [
                       Text(
                         DayNames.of(day.dayIndex),
+                        // The weekday is the row's label, so it carries an
+                        // earth accent and a heavier weight than body copy —
+                        // it is what the eye lands on when hunting for today.
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: day.prepared
                               ? AppColors.onSuccessContainer
-                              : AppColors.onSurfaceVariant,
+                              : AppColors.earth,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),

@@ -21,6 +21,14 @@
 ///
 /// The bar is green ([AppColors.success]). Coverage is progress, not an alarm;
 /// red is reserved for actions and errors.
+///
+/// **3. It is the loudest thing on the result screen.** The percentage is set
+/// at `displayLarge` — the size otherwise reserved for the wordmark — because
+/// this is the answer to the question the caregiver opened the app with, and
+/// everything else on the screen is the working. Earlier the whole card sat at
+/// body weight and competed with seven recipe rows for attention; a caregiver
+/// glancing at her phone across a kitchen could not tell at a distance whether
+/// the week had gone well.
 library;
 
 import 'package:flutter/material.dart';
@@ -62,28 +70,52 @@ class IronCoverageBar extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.successContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
         border: Border.all(
           color: AppColors.success,
-          width: AppSpacing.borderWidth,
+          width: AppSpacing.selectedBorderWidth,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Hierro de la semana',
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: AppColors.onSuccessContainer,
-            ),
+          Row(
+            children: [
+              const ExcludeSemantics(
+                child: Icon(
+                  LucideIcons.droplet600,
+                  size: AppSpacing.iconSize,
+                  color: AppColors.onSuccessContainer,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'Hierro de la semana',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: AppColors.onSuccessContainer,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Raw figure first, percentage second. The milligrams are the fact;
-          // the percentage is the summary of the fact.
+          // The headline. Big enough to read from across the kitchen, which is
+          // where the phone usually is while the pot is on.
           Text(
-            '${_mg(provided)} mg de los ${_mg(required)} mg '
-            'de la semana · ${percent.round()} %',
+            '${percent.round()} %',
+            style: theme.textTheme.displayLarge?.copyWith(
+              color: AppColors.onSuccessContainer,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+
+          // The working, directly under the answer. A percentage with no
+          // numerator is not checkable, and ADR-0005 keeps this figure out of
+          // the model's hands precisely so that it can be checked.
+          Text(
+            '${_mg(provided)} mg de los ${_mg(required)} mg de la semana',
             style: theme.textTheme.bodyLarge?.copyWith(
               color: AppColors.onSuccessContainer,
               fontWeight: FontWeight.w600,

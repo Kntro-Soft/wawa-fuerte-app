@@ -45,6 +45,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
+    // The coverage figure now takes the top of the result screen — it is the
+    // answer, the seven rows are the working — so the week starts below it.
+    await scrollTo(tester, find.text('Lunes'));
     await tester.tap(find.text('Lunes'));
     await tester.pumpAndSettle();
 

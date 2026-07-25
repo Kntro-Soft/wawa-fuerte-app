@@ -165,6 +165,8 @@ void main() {
         listen: false,
       );
       expect(controller.plan!.days, hasLength(7));
+
+      await scrollTo(tester, find.text('Lunes'));
       expect(find.byType(RecipeRow), findsWidgets);
     });
 
@@ -359,12 +361,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The raw figure is what ADR-0005 protects; the percentage alone would be
-      // an unverifiable score.
-      expect(
-        find.text('27,0 mg de los 35,0 mg de la semana · 77 %'),
-        findsOneWidget,
-      );
+      // The percentage is the headline, at display size, because it answers
+      // the question the caregiver opened the app with.
+      expect(find.text('77 %'), findsOneWidget);
+
+      // And the raw figure sits right under it. This is what ADR-0005
+      // protects: a percentage with no numerator is an unverifiable score.
+      expect(find.text('27,0 mg de los 35,0 mg de la semana'), findsOneWidget);
     });
 
     testWidgets('the coverage bar is green, not red', (tester) async {
