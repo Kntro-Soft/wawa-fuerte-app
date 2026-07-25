@@ -128,6 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             Routes.plan,
                             arguments: PlanArguments(child: child),
                           ),
+                          onHistory: () => Navigator.of(context).pushNamed(
+                            Routes.planHistory,
+                            arguments: PlanHistoryArguments(child: child),
+                          ),
                           onEdit: () => _editChild(child),
                           onDelete: () => _deleteChild(child),
                         ),

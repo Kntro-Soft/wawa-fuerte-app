@@ -43,6 +43,7 @@ class ChildCard extends StatelessWidget {
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    this.onHistory,
     super.key,
   });
 
@@ -60,6 +61,7 @@ class ChildCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onHistory;
 
   /// Identity only, never state. See the class doc.
   static const List<Color> _accents = <Color>[
@@ -159,6 +161,18 @@ class ChildCard extends StatelessWidget {
             ),
             child: Row(
               children: [
+                if (onHistory != null) ...[
+                  Expanded(
+                    child: _CardAction(
+                      icon: LucideIcons.history600,
+                      label: 'Historial',
+                      semanticLabel: 'Ver historial de menús de ${child.name}',
+                      color: AppColors.earth,
+                      onTap: onHistory!,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                ],
                 Expanded(
                   child: _CardAction(
                     icon: LucideIcons.pencil600,
@@ -168,7 +182,7 @@ class ChildCard extends StatelessWidget {
                     onTap: onEdit,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _CardAction(
                     icon: LucideIcons.trash2600,

@@ -374,6 +374,22 @@ class _PlanResult extends StatelessWidget {
             ),
           ),
         ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        Center(
+          child: TextButton.icon(
+            onPressed: () => Navigator.of(context).pushNamed(
+              Routes.planHistory,
+              arguments: PlanHistoryArguments(child: controller.child),
+            ),
+            icon: const Icon(
+              LucideIcons.history600,
+              size: AppSpacing.iconSize,
+            ),
+            label: const Text('Ver historial de menús pasados'),
+          ),
+        ),
       ],
     );
   }
@@ -408,66 +424,6 @@ class _PlanFailed extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// --- Shopping list item -----------------------------------------------------
-
-class _ShoppingItem extends StatelessWidget {
-  const _ShoppingItem({
-    required this.ingredient,
-    required this.have,
-    required this.onTap,
-  });
-
-  final String ingredient;
-  final bool have;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final label = ingredient.isEmpty
-        ? ingredient
-        : ingredient[0].toUpperCase() + ingredient.substring(1);
-
-    return Semantics(
-      button: true,
-      checked: have,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radius),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-            horizontal: AppSpacing.xs,
-          ),
-          child: Row(
-            children: [
-              ExcludeSemantics(
-                child: Icon(
-                  have ? LucideIcons.circleCheck600 : LucideIcons.circle600,
-                  size: AppSpacing.iconSize,
-                  color: have ? AppColors.success : AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  label,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    decoration: have ? TextDecoration.lineThrough : null,
-                    color: have
-                        ? AppColors.onSurfaceVariant
-                        : AppColors.onSurface,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
