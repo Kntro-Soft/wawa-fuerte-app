@@ -21,9 +21,11 @@ class HybridInferenceService implements InferenceService {
   Future<void> warmUp() async {
     try {
       await primary.warmUp();
-    } catch (_) {
+    } catch (_) {}
+
+    try {
       await fallback.warmUp();
-    }
+    } catch (_) {}
   }
 
   @override

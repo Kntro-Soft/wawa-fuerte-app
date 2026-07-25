@@ -311,12 +311,17 @@ class _GemmaModelBanner extends StatelessWidget {
     final mode = inference.activeMode;
 
     if (mode == ActiveInferenceMode.cloud) {
-      return const NoticeBanner(
+      return NoticeBanner(
         tone: NoticeTone.advice,
         title: '🌐 Conectado a la Nube (Con Wi-Fi / Red)',
         message:
-            'Generando planes súper rápidos. Si se corta el internet, la app '
-            'usará automáticamente el modelo Gemma de tu teléfono.',
+            'Generando planes en la nube. Puedes descargar Gemma ahora en tu '
+            'teléfono para que la app siga funcionando si te quedas sin internet.',
+        action: TextButton.icon(
+          onPressed: () => context.read<InferenceService>().warmUp(),
+          icon: const Icon(LucideIcons.download600, size: 18),
+          label: const Text('Descargar Gemma (Offline)'),
+        ),
       );
     }
 
