@@ -121,6 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: child,
                           accentIndex: index,
                           planSummary: _planSummary(controller, child),
+                          planIcon: _planIcon(controller, child),
                           onTap: () => Navigator.of(context).pushNamed(
                             Routes.plan,
                             arguments: PlanArguments(child: child),
@@ -159,6 +160,14 @@ class _HomeScreenState extends State<HomeScreen> {
       return 'Su menú está listo · 7 comidas';
     }
     return 'Preparaste ${plan.preparedCount} de 7 comidas';
+  }
+
+  /// The mark that goes with [_planSummary]. Never shown without it.
+  IconData _planIcon(HomeController controller, ChildProfile child) {
+    final plan = controller.planFor(child.id);
+    if (plan == null) return LucideIcons.calendarPlus600;
+    if (plan.preparedCount == 0) return LucideIcons.bookOpen600;
+    return LucideIcons.circleCheck600;
   }
 
   Future<void> _addChild() async {

@@ -38,6 +38,7 @@ class ChildCard extends StatelessWidget {
   const ChildCard({
     required this.child,
     required this.planSummary,
+    required this.planIcon,
     required this.accentIndex,
     required this.onTap,
     required this.onEdit,
@@ -47,6 +48,11 @@ class ChildCard extends StatelessWidget {
 
   final ChildProfile child;
   final String planSummary;
+
+  /// The mark beside [planSummary]. The sentence says everything on its own;
+  /// this is a second cue for a caregiver scanning three cards, and it never
+  /// appears without its sentence.
+  final IconData planIcon;
 
   /// Position in the list. Only picks the medallion colour.
   final int accentIndex;
@@ -106,7 +112,25 @@ class ChildCard extends StatelessWidget {
                             // same rule applied to dishes.
                             Text(child.name, style: theme.textTheme.titleLarge),
                             const SizedBox(height: AppSpacing.xs),
-                            Text(planSummary, style: theme.textTheme.bodySmall),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ExcludeSemantics(
+                                  child: Icon(
+                                    planIcon,
+                                    size: 20,
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    planSummary,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
