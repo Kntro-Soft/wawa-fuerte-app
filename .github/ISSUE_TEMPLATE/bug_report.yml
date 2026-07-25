@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a defect in the app
+title: "fix: <short description>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste a real child's data (name, age, hemoglobin) into this Issue.
+        Use made-up values that reproduce the problem.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the app is affected? See AGENTS.md for ownership.
+      options:
+        - inference
+        - rag
+        - nutrition
+        - storage
+        - onboarding
+        - home
+        - plan
+        - ci
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the app on ...
+        2. Enter profile with age ... and no hemoglobin reading
+        3. Tap "Generate plan"
+        4. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: inference-mode
+    attributes:
+      label: Inference mode
+      description: Was the real model loaded, or the fake service?
+      options:
+        - GemmaInferenceService (real model on a physical device)
+        - FakeInferenceService (hardcoded plan)
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        - Device: Android phone model / iOS Simulator
+        - Android version:
+        - Flutter version (flutter --version):
+        - Commit / branch:
+        - Host OS: Windows / macOS
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stacktrace
+      description: Output from `flutter run` or `flutter logs`.
+      render: shell
+    validations:
+      required: false
