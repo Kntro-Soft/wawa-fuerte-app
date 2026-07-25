@@ -152,9 +152,9 @@ class QonpaniaPlanParser implements PlanParser {
     );
   }
 
-  /// `[{"nombre": "Papa", "cantidad": "1 unidad mediana"}]` → `["Papa (1 unidad
-  /// mediana)"]`, matching the flat `List<String>` the domain and the recipe
-  /// screen already use.
+  /// Flattens `[{"nombre": "Papa", "cantidad": "1 unidad mediana"}]` into
+  /// `["Papa (1 unidad mediana)"]` — the flat `List<String>` that the domain
+  /// and the recipe screen already use.
   static List<String> _ingredients(Object? raw) {
     if (raw is! List) return const [];
 

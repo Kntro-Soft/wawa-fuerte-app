@@ -64,8 +64,9 @@ class AppSettingsRepository {
   }
 
   Future<String?> getCaregiverName() async {
-    if (inMemory && _db == null && _lazyDb == null)
+    if (inMemory && _db == null && _lazyDb == null) {
       return _fakeDb['caregiverName'];
+    }
     final db = await _getDb();
     final rows = await db.query(
       'app_settings',
