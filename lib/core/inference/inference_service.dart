@@ -25,6 +25,11 @@ abstract interface class InferenceService {
   /// job, so a malformed generation fails in one known place.
   Future<String> generatePlanText(PlanPrompt prompt);
 
+  /// Generic single-turn generation for anything that is not a weekly plan —
+  /// extracting ingredients from free text, orchestrating a function call.
+  /// Returns model output verbatim; the caller parses it.
+  Future<String> generateText(String prompt);
+
   /// Releases native resources.
   Future<void> dispose();
 }
