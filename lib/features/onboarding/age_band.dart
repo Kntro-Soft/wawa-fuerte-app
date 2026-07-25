@@ -94,3 +94,19 @@ enum AgeBand {
     return DateTime(absoluteMonths ~/ 12, absoluteMonths % 12 + 1, 15);
   }
 }
+
+/// The reverse lookup, used when reopening the form on a child already saved.
+///
+/// The form asks for a range and the profile stores a date, so editing has to
+/// map back. Ages outside the four offered ranges clamp to the nearest end
+/// rather than returning null: a child of four months or of seven years still
+/// has to see one card selected, or the form would look unanswered and the age
+/// would be silently re-estimated on save.
+extension AgeBandMatch on AgeBand {
+  static AgeBand forAgeMonths(int ageMonths) {
+    if (ageMonths < 12) return AgeBand.sixToElevenMonths;
+    if (ageMonths < 24) return AgeBand.oneYear;
+    if (ageMonths < 36) return AgeBand.twoYears;
+    return AgeBand.threeToFiveYears;
+  }
+}
