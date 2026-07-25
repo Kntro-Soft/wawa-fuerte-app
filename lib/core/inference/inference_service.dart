@@ -1,0 +1,61 @@
+/// On-device text generation with Gemma.
+///
+/// OWNER: P1 (@sharvel-irigoyen).
+///
+/// Everything behind this interface is native and device-bound: real inference
+/// runs on a physical Android phone and cannot be validated on a simulator or
+/// emulator (ADR-0003, ADR-0004). That is exactly why the seam exists — the
+/// other three developers work against [FakeInferenceService] and never wait
+/// for the model.
+library;
+
+import '../domain/child_profile.dart';
+import '../domain/recipe.dart';
+
+abstract interface class InferenceService {
+  /// Whether the model is loaded and can serve a request.
+  bool get isReady;
+
+  /// Loads the model into memory. Slow — call it once, off the critical path.
+  Future<void> warmUp();
+
+  /// Generates the raw plan text from a grounded prompt.
+  ///
+  /// Returns model output verbatim; parsing into a [WeeklyPlan] is the caller's
+  /// job, so a malformed generation fails in one known place.
+  Future<String> generatePlanText(PlanPrompt prompt);
+
+  /// Releases native resources.
+  Future<void> dispose();
+}
+
+/// Everything the model is allowed to see, assembled by the caller.
+///
+/// The model never receives raw user data — only this, built from retrieved
+/// INS recipes plus the child's age band.
+class PlanPrompt {
+  const PlanPrompt({
+    required this.candidateRecipes,
+    required this.ageMonths,
+    required this.region,
+    required this.availableIngredients,
+    required this.weeklyBudgetPen,
+    this.hemoglobin,
+  });
+
+  /// Recipes retrieved from the INS corpus. The model composes a week from
+  /// these; it does not invent dishes (ADR-0005).
+  final List<Recipe> candidateRecipes;
+
+  final int ageMonths;
+  final Region region;
+  final List<String> availableIngredients;
+  final double weeklyBudgetPen;
+
+  /// Null when the caregiver has no CRED reading (ADR-0007). Prompt builders
+  /// must branch on this: with a value, ask the model to prioritise iron
+  /// density; without one, ask for a standard preventive plan for the age.
+  final double? hemoglobin;
+
+  bool get isPersonalised => hemoglobin != null;
+}
