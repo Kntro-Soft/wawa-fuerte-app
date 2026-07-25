@@ -40,6 +40,28 @@ dependencies:
   sqflite: ^2.4.2
   path: ^1.9.1
 
+  # State management (ADR-0009). Chosen for the smallest API surface, so four
+  # developers converge on one idiom inside a six-hour sprint.
+  provider: ^6.1.2
+
+  # Lexend, loaded through google_fonts. Lexend was designed against reading
+  # -proficiency research and is the single family used across the whole app;
+  # our users may read slowly and some of them may barely read at all.
+  google_fonts: ^6.2.1
+
+  # Outline icon set (MIT). Every icon in this app is paired with a text label,
+  # so the set only has to be legible, not self-explanatory.
+  lucide_icons_flutter: ^3.1.15
+
+  # Keeps the screen awake while Gemma generates. On a low-end phone that takes
+  # tens of seconds; a screen that sleeps mid-generation reads as a crash.
+  wakelock_plus: ^1.2.8
+
+  # Reads the preparation steps aloud. This is the core accessibility feature:
+  # a caregiver with wet hands, or one who does not read fluently, listens
+  # instead of reading.
+  flutter_tts: ^4.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
