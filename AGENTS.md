@@ -1,7 +1,8 @@
 # AGENTS.md
 
 Working agreement for the 4 devs (and for any AI agent touching this repo).
-**6-hour sprint. Priority: get the demo running on the iPhone. Not architectural purity.**
+**6-hour sprint. Priority: get the demo running on a physical Android phone. Not architectural
+purity.**
 
 ## Purpose
 
@@ -11,11 +12,34 @@ Everything (model, recipe book, database) lives inside the device.
 
 ## Big Picture
 
-- Flutter stable + Dart 3. State management: **decided at minute 0** → see `docs/DECISIONS.md`.
-- Inference: `flutter_gemma` over the MediaPipe LLM Inference API. **A physical iPhone is
-  mandatory** (the simulator is CPU-only with a 256 MB Metal cap → it cannot run the model).
+- Flutter stable + Dart 3. State management: **decided at minute 0** →
+  see [ADR-0009](docs/adr/0009-state-management.md).
+- **Android is the primary target** ([ADR-0003](docs/adr/0003-android-as-primary-target.md)). The
+  demo runs on a physical Android phone; CI, testing and the "does it work" bar are defined
+  against Android. iOS stays buildable as a bonus, not as a deliverable.
+- Inference: `flutter_gemma` over the MediaPipe LLM Inference API
+  ([ADR-0004](docs/adr/0004-flutter-gemma-over-mediapipe.md)). **A physical phone is mandatory**
+  — no simulator or emulator can run the model (the iOS Simulator is CPU-only with a 256 MB Metal
+  cap). This is why P1 (inference) is one of the Android devs.
 - The Gemma model is a pre-trained black box: **it is neither trained nor fine-tuned**.
-  It is specialised via **prompting + RAG** over the INS recipe book.
+  It is specialised via **prompting + RAG** over the INS recipe book
+  ([ADR-0005](docs/adr/0005-rag-instead-of-fine-tuning.md)).
+- The **ADRs in `docs/adr/` are the source of truth**. If this file contradicts an ADR, the ADR
+  wins and this file gets fixed.
+
+## Who is who
+
+| Role | Area | Owner | Hardware |
+|---|---|---|---|
+| P1 | Inference, `pubspec.yaml`, `main.dart`, `android/` | @sharvel-irigoyen | Windows + Android |
+| P2 | RAG + nutrition, `ios/`, tech lead | @jhosepmyr | macOS + iPhone |
+| P3 | UI, screens, TTS | @farioraro | Windows + Android |
+| P4 | Data and local persistence | @Eric396 | Windows + Android |
+
+The three Windows devs install Flutter + the Android SDK and test on their own handsets. The
+macOS dev does **not** install the Android SDK and develops non-inference work against the iOS
+Simulator, which Xcode already provides. Anything platform-specific (permissions, file paths, TTS
+voices) must be checked on Android before it counts as done, even if it looked fine on iOS.
 
 ```
 lib/
@@ -38,7 +62,7 @@ assets/
 ## Non-negotiable rules
 
 - **Nobody commits the `.task` model** — it weighs more than 1 GB and blows up the repo. It goes
-  in `assets/models/`, which is git-ignored. It is shared over AirDrop/USB between devs.
+  in `assets/models/`, which is git-ignored. It is shared out-of-band (USB / file transfer).
 - **No API keys.** This project is 100% offline; if anyone needs a key, something was designed
   wrong. Raise it first.
 - **Only P1 edits `pubspec.yaml` and `main.dart`.** If you need a package, ask for it — do not
@@ -55,7 +79,8 @@ For the first hours **everyone works against mocks**, nobody waits for anybody:
 
 - P3 (UI) uses a `FakeInferenceService` that returns a hardcoded plan.
 - P2 (RAG) tests search against a `recetario_ins.json` with 5 sample recipes.
-- P1 validates Gemma on the iPhone with a standalone prompt, without depending on the UI.
+- P1 validates Gemma on a physical Android phone with a standalone prompt, without depending on
+  the UI. Native linking is the highest-risk task of the sprint: validate it in hour 1.
 - P4 builds the data schema and fills it with seeds.
 
 Real integration happens at the **hour-4 checkpoint**, not before.
@@ -64,7 +89,8 @@ Real integration happens at the **hour-4 checkpoint**, not before.
 
 ```
 flutter pub get
-flutter run                  # simulator (UI) or physical iPhone (real Gemma)
+flutter run                  # physical Android phone (real Gemma) or,
+                             # on the macOS machine, the iOS Simulator with the fake service
 dart format .
 flutter analyze
 flutter test

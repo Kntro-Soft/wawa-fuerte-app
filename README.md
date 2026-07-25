@@ -54,12 +54,14 @@ flutter pub get
 flutter run
 ```
 
-> ⚠️ Real Gemma inference requires a **physical iPhone**. The iOS Simulator is CPU-only with
-> a 256 MB Metal cap and cannot run the model. To develop UI without the model, use the
-> `FakeInferenceService`.
+> ⚠️ **Android is the primary target** ([ADR-0003](docs/adr/0003-android-as-primary-target.md)):
+> the demo runs on a **physical Android phone**. Real Gemma inference cannot run on a simulator
+> or emulator — it needs real hardware. To develop UI and logic without the model, use the
+> `FakeInferenceService` — on the macOS machine that runs against the iOS Simulator. iOS remains
+> buildable as a bonus, not as a deliverable.
 
-The `.task` model is **not in the repo** (it weighs > 1 GB) — it is shared over AirDrop/USB and
-goes into `assets/models/`, which is git-ignored.
+The `.task` model is **not in the repo** (it weighs > 1 GB) — it is shared out-of-band (USB /
+file transfer) and goes into `assets/models/`, which is git-ignored.
 
 ## Documentation
 
@@ -67,16 +69,23 @@ goes into `assets/models/`, which is git-ignored.
 |---|---|
 | [AGENTS.md](AGENTS.md) | Working agreement, folder structure, who touches what |
 | [docs/FLOWS.md](docs/FLOWS.md) | User flows with the exact data per screen |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Technical decision log |
+| [docs/adr/](docs/adr/README.md) | Architecture Decision Records — the source of truth for technical decisions |
 
 ## Team
 
-| Role | Area | Owner |
-|---|---|---|
-| P1 | Inference engine (Gemma + MediaPipe), `pubspec.yaml` | _(unassigned)_ |
-| P2 | RAG + nutrition calculation | _(unassigned)_ |
-| P3 | UI, screens, TTS | _(unassigned)_ |
-| P4 | Data and local persistence | _(unassigned)_ |
+| Role | Area | Owner | Hardware |
+|---|---|---|---|
+| P1 | Inference engine (Gemma + MediaPipe), `pubspec.yaml`, `main.dart`, `android/` | [@sharvel-irigoyen](https://github.com/sharvel-irigoyen) — Javier Sharvel | Windows + Android |
+| P2 | RAG + nutrition calculation, `ios/`, tech lead | [@jhosepmyr](https://github.com/jhosepmyr) — Jhosepmyr Orlando Gutierrez Soto | macOS + iPhone |
+| P3 | UI, screens, TTS | [@farioraro](https://github.com/farioraro) — Carlos Alberto Ochoa Colonio | Windows + Android |
+| P4 | Data and local persistence | [@Eric396](https://github.com/Eric396) — Eric Hernández | Windows + Android |
+
+The inference module belongs to an Android developer on purpose: real inference can only be
+validated on a physical handset, and three of the four devs have one
+([ADR-0003](docs/adr/0003-android-as-primary-target.md)). The macOS machine does not install the
+Android SDK; it owns the pure-Dart work (RAG, nutrition), which is verified with `flutter test`
+and the iOS Simulator. These owners must stay in sync with
+[`.github/CODEOWNERS`](.github/CODEOWNERS).
 
 ## Licensing
 
