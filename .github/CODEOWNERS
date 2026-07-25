@@ -1,25 +1,25 @@
-# CODEOWNERS — define fronteras de archivos para que 4 devs en paralelo no colisionen.
-# Sirve para NOTIFICAR, no para bloquear (no activar "require review" en un sprint de 6h).
+# CODEOWNERS — file boundaries so that 4 devs working in parallel do not collide.
+# It is here to NOTIFY, not to block (do not enable "require review" in a 6-hour sprint).
 #
-# TODO minuto 0: reemplazar @dev1..@dev4 por los usuarios reales de GitHub.
+# TODO minute 0: replace @dev1..@dev4 with the real GitHub users.
 
 # Fallback
 *                           @dev1
 
-# P1 — Motor de inferencia on-device (Gemma + MediaPipe)
+# P1 — On-device inference engine (Gemma + MediaPipe)
 /lib/core/inference/        @dev1
 /lib/main.dart              @dev1
 /pubspec.yaml               @dev1
 /ios/                       @dev1
 
-# P2 — RAG + cálculo nutricional
+# P2 — RAG + nutrition calculation
 /lib/core/rag/              @dev2
 /lib/core/nutrition/        @dev2
 
-# P3 — UI, pantallas, TTS
+# P3 — UI, screens, TTS
 /lib/features/              @dev3
 /lib/core/theme/            @dev3
 
-# P4 — Datos y persistencia
+# P4 — Data and persistence
 /lib/core/storage/          @dev4
 /assets/data/               @dev4
