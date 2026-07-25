@@ -63,7 +63,11 @@ void main() {
 
     test('every row maps onto the Recipe domain class', () {
       for (final row in rows) {
-        expect(() => _toRecipe(row), returnsNormally, reason: 'row ${row['id']}');
+        expect(
+          () => _toRecipe(row),
+          returnsNormally,
+          reason: 'row ${row['id']}',
+        );
       }
     });
 
@@ -77,9 +81,16 @@ void main() {
       for (final row in rows) {
         final iron = row['ironMg'];
         expect(iron, isNotNull, reason: 'recipe ${row['id']} has null ironMg');
-        expect(iron, isA<num>(), reason: 'recipe ${row['id']} ironMg is not numeric');
-        expect((iron as num) >= 0, isTrue,
-            reason: 'recipe ${row['id']} has negative ironMg: $iron');
+        expect(
+          iron,
+          isA<num>(),
+          reason: 'recipe ${row['id']} ironMg is not numeric',
+        );
+        expect(
+          (iron as num) >= 0,
+          isTrue,
+          reason: 'recipe ${row['id']} has negative ironMg: $iron',
+        );
       }
     });
 
@@ -88,18 +99,28 @@ void main() {
       // means a transcription slip (a decimal comma read as a thousands
       // separator), which would silently inflate the coverage figure.
       for (final row in rows) {
-        expect((row['ironMg'] as num) <= 40, isTrue,
-            reason: 'recipe ${row['id']} has implausible ironMg: ${row['ironMg']}');
+        expect(
+          (row['ironMg'] as num) <= 40,
+          isTrue,
+          reason:
+              'recipe ${row['id']} has implausible ironMg: ${row['ironMg']}',
+        );
       }
     });
 
     test('minAgeMonths is at least the start of complementary feeding', () {
       for (final row in rows) {
         final age = row['minAgeMonths'] as int;
-        expect(age >= kComplementaryFeedingStartMonths, isTrue,
-            reason: 'recipe ${row['id']} would be served before 6 months: $age');
-        expect(age <= kMaxPlausibleAgeMonths, isTrue,
-            reason: 'recipe ${row['id']} has implausible minAgeMonths: $age');
+        expect(
+          age >= kComplementaryFeedingStartMonths,
+          isTrue,
+          reason: 'recipe ${row['id']} would be served before 6 months: $age',
+        );
+        expect(
+          age <= kMaxPlausibleAgeMonths,
+          isTrue,
+          reason: 'recipe ${row['id']} has implausible minAgeMonths: $age',
+        );
       }
     });
 
@@ -113,18 +134,32 @@ void main() {
 
     test('name, preparation and ingredients are non-empty', () {
       for (final row in rows) {
-        expect((row['name'] as String).trim(), isNotEmpty, reason: 'recipe ${row['id']}');
-        expect((row['preparation'] as String).trim(), isNotEmpty,
-            reason: 'recipe ${row['id']} has nothing for TTS to read');
-        expect((row['ingredients'] as List), isNotEmpty, reason: 'recipe ${row['id']}');
+        expect(
+          (row['name'] as String).trim(),
+          isNotEmpty,
+          reason: 'recipe ${row['id']}',
+        );
+        expect(
+          (row['preparation'] as String).trim(),
+          isNotEmpty,
+          reason: 'recipe ${row['id']} has nothing for TTS to read',
+        );
+        expect(
+          (row['ingredients'] as List),
+          isNotEmpty,
+          reason: 'recipe ${row['id']}',
+        );
       }
     });
 
     test('ingredients are lowercase, as the retriever matches on them', () {
       for (final row in rows) {
         for (final ingredient in (row['ingredients'] as List).cast<String>()) {
-          expect(ingredient, ingredient.toLowerCase(),
-              reason: 'recipe ${row['id']} ingredient not lowercase: $ingredient');
+          expect(
+            ingredient,
+            ingredient.toLowerCase(),
+            reason: 'recipe ${row['id']} ingredient not lowercase: $ingredient',
+          );
           expect(ingredient.trim(), isNotEmpty, reason: 'recipe ${row['id']}');
         }
       }
@@ -134,8 +169,11 @@ void main() {
       for (final row in rows) {
         final region = row['region'] as String?;
         if (region != null) {
-          expect(Region.values.map((r) => r.name), contains(region),
-              reason: 'recipe ${row['id']} has unknown region: $region');
+          expect(
+            Region.values.map((r) => r.name),
+            contains(region),
+            reason: 'recipe ${row['id']} has unknown region: $region',
+          );
         }
       }
     });
@@ -150,8 +188,11 @@ void main() {
 
     test('sources point at the official INS domain', () {
       for (final row in rows) {
-        expect(row['source'] as String, contains('ins.gob.pe'),
-            reason: 'recipe ${row['id']} is not sourced from INS');
+        expect(
+          row['source'] as String,
+          contains('ins.gob.pe'),
+          reason: 'recipe ${row['id']} is not sourced from INS',
+        );
       }
     });
 
@@ -178,7 +219,11 @@ void main() {
       final regions = doc['regions'] as Map<String, dynamic>;
       for (final entry in regions.entries) {
         final items = (entry.value as List).cast<Map<String, dynamic>>();
-        expect(items, isNotEmpty, reason: 'region ${entry.key} has no ingredients');
+        expect(
+          items,
+          isNotEmpty,
+          reason: 'region ${entry.key} has no ingredients',
+        );
         for (final item in items) {
           final name = item['nombre'] as String;
           expect(name.trim(), isNotEmpty, reason: entry.key);
@@ -189,7 +234,11 @@ void main() {
           expect(iron, isA<num>(), reason: '$name iron is not numeric');
           expect((iron as num) >= 0, isTrue, reason: '$name has negative iron');
           // No whole food reaches 100 mg per 100 g; that would be a typo.
-          expect(iron <= 100, isTrue, reason: '$name has implausible iron: $iron');
+          expect(
+            iron <= 100,
+            isTrue,
+            reason: '$name has implausible iron: $iron',
+          );
 
           final cost = item['costo_referencial_pen'];
           expect(cost, isA<num>(), reason: name);
@@ -209,20 +258,31 @@ void main() {
             .cast<Map<String, dynamic>>()
             .map((i) => i['nombre'] as String)
             .toList();
-        expect(names.toSet().length, names.length,
-            reason: 'duplicate ingredient in region ${entry.key}');
+        expect(
+          names.toSet().length,
+          names.length,
+          reason: 'duplicate ingredient in region ${entry.key}',
+        );
       }
     });
 
-    test('estimated costs are flagged as estimates, never passed off as sourced', () {
-      final regions = doc['regions'] as Map<String, dynamic>;
-      for (final entry in regions.entries) {
-        for (final item in (entry.value as List).cast<Map<String, dynamic>>()) {
-          expect(item['costo_referencial_es_estimado'], isTrue,
-              reason: '${item['nombre']} claims an official cost we do not have');
+    test(
+      'estimated costs are flagged as estimates, never passed off as sourced',
+      () {
+        final regions = doc['regions'] as Map<String, dynamic>;
+        for (final entry in regions.entries) {
+          for (final item
+              in (entry.value as List).cast<Map<String, dynamic>>()) {
+            expect(
+              item['costo_referencial_es_estimado'],
+              isTrue,
+              reason:
+                  '${item['nombre']} claims an official cost we do not have',
+            );
+          }
         }
-      }
-    });
+      },
+    );
   });
 
   group('requerimientos_hierro.json', () {
@@ -236,30 +296,49 @@ void main() {
 
     test('parses and is not empty', () => expect(ranges, isNotEmpty));
 
-    test('starts at complementary feeding and has ordered, non-overlapping ranges', () {
-      expect(ranges.first['minAgeMonths'], kComplementaryFeedingStartMonths);
-      for (var i = 0; i < ranges.length; i++) {
-        final min = ranges[i]['minAgeMonths'] as int;
-        final max = ranges[i]['maxAgeMonths'] as int;
-        expect(min >= kComplementaryFeedingStartMonths, isTrue,
-            reason: 'range ${ranges[i]['id']} starts before 6 months');
-        expect(max > min, isTrue, reason: 'range ${ranges[i]['id']} is inverted');
-        if (i > 0) {
-          expect(min, (ranges[i - 1]['maxAgeMonths'] as int) + 1,
-              reason: 'gap or overlap before range ${ranges[i]['id']}');
+    test(
+      'starts at complementary feeding and has ordered, non-overlapping ranges',
+      () {
+        expect(ranges.first['minAgeMonths'], kComplementaryFeedingStartMonths);
+        for (var i = 0; i < ranges.length; i++) {
+          final min = ranges[i]['minAgeMonths'] as int;
+          final max = ranges[i]['maxAgeMonths'] as int;
+          expect(
+            min >= kComplementaryFeedingStartMonths,
+            isTrue,
+            reason: 'range ${ranges[i]['id']} starts before 6 months',
+          );
+          expect(
+            max > min,
+            isTrue,
+            reason: 'range ${ranges[i]['id']} is inverted',
+          );
+          if (i > 0) {
+            expect(
+              min,
+              (ranges[i - 1]['maxAgeMonths'] as int) + 1,
+              reason: 'gap or overlap before range ${ranges[i]['id']}',
+            );
+          }
         }
-      }
-    });
+      },
+    );
 
     test('every bio-availability level has a positive daily requirement', () {
       for (final range in ranges) {
         final daily = range['dailyMg'] as Map<String, dynamic>;
-        expect(daily.keys.toSet(), {'15', '12', '10', '5'},
-            reason: 'range ${range['id']} is missing a bio-availability level');
+        expect(
+          daily.keys.toSet(),
+          {'15', '12', '10', '5'},
+          reason: 'range ${range['id']} is missing a bio-availability level',
+        );
         for (final entry in daily.entries) {
           expect(entry.value, isA<num>(), reason: range['id'].toString());
-          expect((entry.value as num) > 0, isTrue,
-              reason: 'range ${range['id']} level ${entry.key} is not positive');
+          expect(
+            (entry.value as num) > 0,
+            isTrue,
+            reason: 'range ${range['id']} level ${entry.key} is not positive',
+          );
         }
       }
     });
@@ -267,12 +346,18 @@ void main() {
     test('lower bio-availability always demands more iron', () {
       for (final range in ranges) {
         final daily = range['dailyMg'] as Map<String, dynamic>;
-        final ordered = ['15', '12', '10', '5']
-            .map((k) => (daily[k] as num).toDouble())
-            .toList();
+        final ordered = [
+          '15',
+          '12',
+          '10',
+          '5',
+        ].map((k) => (daily[k] as num).toDouble()).toList();
         for (var i = 1; i < ordered.length; i++) {
-          expect(ordered[i] > ordered[i - 1], isTrue,
-              reason: 'range ${range['id']} requirements are not monotonic');
+          expect(
+            ordered[i] > ordered[i - 1],
+            isTrue,
+            reason: 'range ${range['id']} requirements are not monotonic',
+          );
         }
       }
     });
@@ -283,8 +368,11 @@ void main() {
         final weekly = range['weeklyMg'] as Map<String, dynamic>;
         for (final entry in daily.entries) {
           final expected = (entry.value as num).toDouble() * 7;
-          expect((weekly[entry.key] as num).toDouble(), closeTo(expected, 0.05),
-              reason: 'range ${range['id']} level ${entry.key}');
+          expect(
+            (weekly[entry.key] as num).toDouble(),
+            closeTo(expected, 0.05),
+            reason: 'range ${range['id']} level ${entry.key}',
+          );
         }
       }
     });
@@ -292,8 +380,11 @@ void main() {
     test('the default bio-availability level exists in every range', () {
       final defaultLevel = doc['defaultBioavailability'] as String;
       for (final range in ranges) {
-        expect((range['dailyMg'] as Map<String, dynamic>)[defaultLevel], isNotNull,
-            reason: 'range ${range['id']} lacks the default level $defaultLevel');
+        expect(
+          (range['dailyMg'] as Map<String, dynamic>)[defaultLevel],
+          isNotNull,
+          reason: 'range ${range['id']} lacks the default level $defaultLevel',
+        );
       }
     });
 
@@ -307,9 +398,11 @@ void main() {
 
     test('an age in the infant range resolves to exactly one requirement', () {
       for (final ageMonths in [6, 11, 12, 47, 48]) {
-        final matches = ranges.where((r) =>
-            ageMonths >= (r['minAgeMonths'] as int) &&
-            ageMonths <= (r['maxAgeMonths'] as int));
+        final matches = ranges.where(
+          (r) =>
+              ageMonths >= (r['minAgeMonths'] as int) &&
+              ageMonths <= (r['maxAgeMonths'] as int),
+        );
         expect(matches.length, 1, reason: 'age $ageMonths months');
       }
     });
@@ -317,16 +410,23 @@ void main() {
 
   group('cross-file consistency', () {
     test('no recipe is suitable below the youngest requirement range', () {
-      final recipes = (_readJson('assets/data/recetario_ins.json')['recipes'] as List)
-          .cast<Map<String, dynamic>>();
-      final ranges = (_readJson('assets/data/requerimientos_hierro.json')['ranges'] as List)
-          .cast<Map<String, dynamic>>();
+      final recipes =
+          (_readJson('assets/data/recetario_ins.json')['recipes'] as List)
+              .cast<Map<String, dynamic>>();
+      final ranges =
+          (_readJson('assets/data/requerimientos_hierro.json')['ranges']
+                  as List)
+              .cast<Map<String, dynamic>>();
       final youngest = ranges
           .map((r) => r['minAgeMonths'] as int)
           .reduce((a, b) => a < b ? a : b);
       for (final recipe in recipes) {
-        expect((recipe['minAgeMonths'] as int) >= youngest, isTrue,
-            reason: 'recipe ${recipe['id']} has no requirement range to be scored against');
+        expect(
+          (recipe['minAgeMonths'] as int) >= youngest,
+          isTrue,
+          reason:
+              'recipe ${recipe['id']} has no requirement range to be scored against',
+        );
       }
     });
   });
