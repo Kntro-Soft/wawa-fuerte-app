@@ -1,0 +1,147 @@
+name: wawafuerte
+description: "Offline-first weekly nutrition plans against childhood anemia, powered by on-device Gemma."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+  # Local persistence (ADR-0002: there is no backend, everything lives on the
+  # device). `path` resolves the on-device database location.
+  sqflite: ^2.4.2
+  path: ^1.9.1
+
+  # State management (ADR-0009). Chosen for the smallest API surface, so four
+  # developers converge on one idiom inside a six-hour sprint.
+  provider: ^6.1.2
+
+  # Outline icon set (MIT). Every icon in this app is paired with a text label,
+  # so the set only has to be legible, not self-explanatory.
+  lucide_icons_flutter: ^3.1.15
+
+  # Keeps the screen awake while Gemma generates. On a low-end phone that takes
+  # tens of seconds; a screen that sleeps mid-generation reads as a crash.
+  wakelock_plus: ^1.2.8
+
+  # Reads the preparation steps aloud. This is the core accessibility feature:
+  # a caregiver with wet hands, or one who does not read fluently, listens
+  # instead of reading.
+  flutter_tts: ^4.2.0
+  flutter_gemma: ^1.3.2
+  flutter_gemma_litertlm: ^1.2.0
+
+  # Talks to the hosted nutrition agent (ADR-0015). Opt-in: without
+  # `QONPANIA_API_KEY` at build time the app never opens a socket and behaves
+  # exactly as it did under ADR-0002. Already resolved transitively — promoted
+  # to a direct dependency so `core/remote/` may import it.
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Runs SQLite on desktop/CI through the FFI implementation, so the storage
+  # tests need neither an emulator nor a physical handset.
+  sqflite_common_ffi: ^2.3.6
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # The INS corpus the RAG retrieves from (ADR-0005, ADR-0011). Bundled because
+  # the app has no network (ADR-0002). Model weights live in assets/models/,
+  # which is git-ignored and deliberately NOT listed here.
+  assets:
+    - assets/data/
+
+  # Lexend, BUNDLED — never fetched.
+  #
+  # This started as `google_fonts`, which downloads the .ttf at first paint and
+  # caches it. That is wrong for this app in a way that would not have shown up
+  # on a developer's laptop: there is no network on the target device (ADR-0002),
+  # so the fetch always fails and Flutter silently falls back to the system font.
+  # The whole reason for choosing Lexend — legibility for a caregiver who reads
+  # slowly — would have been lost, quietly, on exactly the phones it was chosen
+  # for. Four weights, ~280 KB total, shipped in the APK.
+  #
+  # Lexend is licensed under the SIL Open Font License 1.1.
+  fonts:
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lexend-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lexend-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Lexend-Bold.ttf
+          weight: 700
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package

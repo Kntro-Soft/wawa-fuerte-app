@@ -1,0 +1,60 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+### Secrets ###
+# This project is 100% offline (ADR-0002) and should need no keys at all.
+# If one ever appears, it must never reach the repository.
+.env
+.env.*
+!.env.example
+
+### On-device model weights ###
+# The Gemma .task/.litertlm checkpoint is >1 GB (ADR-0004). It is shared
+# out-of-band (USB / file transfer), never committed.
+/assets/models/
+*.task
+*.litertlm
+*.tflite

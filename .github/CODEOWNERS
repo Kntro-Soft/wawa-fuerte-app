@@ -1,0 +1,30 @@
+# CODEOWNERS — file boundaries so that 4 devs working in parallel do not collide.
+# It is here to NOTIFY, not to block (do not enable "require review" in a 6-hour sprint).
+#
+# Owners match the team table in README.md. Keep both in sync.
+
+# Fallback — tech lead
+*                           @jhosepmyr
+
+# P1 — On-device inference engine (Gemma + MediaPipe)
+# Android is the primary target (ADR-0003), so the inference owner is an Android dev:
+# real inference can only be validated on a physical handset.
+/lib/core/inference/        @sharvel-irigoyen
+/lib/main.dart              @sharvel-irigoyen
+/pubspec.yaml               @sharvel-irigoyen
+/android/                   @sharvel-irigoyen
+
+# iOS is a bonus target, not a deliverable (ADR-0003). Only the macOS machine can build it.
+/ios/                       @jhosepmyr
+
+# P2 — RAG + nutrition calculation
+/lib/core/rag/              @jhosepmyr
+/lib/core/nutrition/        @jhosepmyr
+
+# P3 — UI, screens, TTS
+/lib/features/              @farioraro
+/lib/core/theme/            @farioraro
+
+# P4 — Data and persistence
+/lib/core/storage/          @Eric396
+/assets/data/               @Eric396

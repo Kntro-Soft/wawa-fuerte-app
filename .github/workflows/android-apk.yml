@@ -1,0 +1,72 @@
+name: Android APK
+
+# Builds an installable APK whenever develop moves, so the three developers on
+# Windows and the demo handset can get a build without anyone having to compile
+# locally. Downloaded artifacts arrive as a .zip.
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Says out loud which of the two builds this is, because the difference is
+      # invisible in the artifact and "why is it not calling the agent" is an
+      # expensive thing to debug on demo day.
+      - name: Report build mode
+        env:
+          QONPANIA_API_KEY: ${{ secrets.QONPANIA_API_KEY }}
+          GEMMA_MODEL_PATH: ${{ secrets.GEMMA_MODEL_PATH }}
+        run: |
+          if [ -n "$QONPANIA_API_KEY" ]; then
+            echo "Hosted nutrition agent: ENABLED (ADR-0015)"
+          fi
+          if [ -n "$GEMMA_MODEL_PATH" ]; then
+            echo "Custom Gemma Model URL/Path: $GEMMA_MODEL_PATH"
+          else
+            echo "Gemma Model URL: DEFAULT REMOTE URL (auto-download on first run)"
+          fi
+
+      # Release rather than debug: debug-mode Dart is far slower, and the whole
+      # point of installing this build is measuring real on-device inference.
+      # It is signed with the debug keystore (see android/app/build.gradle.kts),
+      # which is fine for sideloading and not fine for Play.
+      - name: Build APK
+        env:
+          QONPANIA_API_KEY: ${{ secrets.QONPANIA_API_KEY }}
+          GEMMA_MODEL_PATH: ${{ secrets.GEMMA_MODEL_PATH }}
+        run: |
+          flutter build apk --release \
+            --dart-define=QONPANIA_API_KEY="$QONPANIA_API_KEY" \
+            --dart-define=GEMMA_MODEL_PATH="$GEMMA_MODEL_PATH"
+
+      - name: Report size
+        run: ls -lh build/app/outputs/flutter-apk/app-release.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wawa-fuerte-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          # Long enough to outlive the sprint without accumulating forever.
+          retention-days: 14
+          if-no-files-found: error
