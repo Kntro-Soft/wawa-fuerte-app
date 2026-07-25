@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 
 import '../core/domain/generate_weekly_plan.dart';
 import '../core/inference/fake_inference_service.dart';
+import '../core/inference/gemma_inference_service.dart';
 import '../core/inference/inference_service.dart';
 import '../core/nutrition/iron_calculator.dart';
 import '../core/nutrition/table_iron_calculator.dart';
@@ -61,7 +62,7 @@ class AppProviders extends StatelessWidget {
     final profileRepository = profiles ?? InMemoryProfileRepository();
     final planRepository = plans ?? InMemoryPlanRepository();
     final recipeRetriever = retriever ?? FakeRecipeRetriever();
-    final inferenceService = inference ?? FakeInferenceService();
+    final inferenceService = inference ?? defaultInferenceService();
     final planParser = parser ?? const SimplePlanParser();
     const calculator = TableIronCalculator();
 
@@ -102,4 +103,23 @@ class AppProviders extends StatelessWidget {
       child: child,
     );
   }
+}
+
+/// Path to the Gemma checkpoint, supplied at build time:
+///
+/// ```
+/// flutter run --dart-define=GEMMA_MODEL_PATH=/absolute/path/model.litertlm
+/// ```
+///
+/// The weights are never committed (ADR-0004), so there is no sensible default.
+const gemmaModelPath = String.fromEnvironment('GEMMA_MODEL_PATH');
+
+/// Real inference when a checkpoint was supplied, the fake otherwise.
+///
+/// This keeps the fake as the default so that `flutter test`, CI, and any
+/// developer without the 557 MB file still get a running app — which is the
+/// whole reason [InferenceService] is an interface (ADR-0004).
+InferenceService defaultInferenceService() {
+  if (gemmaModelPath.isEmpty) return FakeInferenceService();
+  return GemmaInferenceService(modelPath: gemmaModelPath);
 }
