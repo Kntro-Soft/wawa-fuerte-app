@@ -10,6 +10,9 @@ class FailingInferenceService implements InferenceService {
   bool get isReady => true;
 
   @override
+  ActiveInferenceMode get activeMode => ActiveInferenceMode.cloud;
+
+  @override
   Future<void> warmUp() async {
     throw Exception('Network unreachable');
   }

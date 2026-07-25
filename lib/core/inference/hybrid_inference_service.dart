@@ -14,6 +14,10 @@ class HybridInferenceService implements InferenceService {
   bool get isReady => primary.isReady || fallback.isReady;
 
   @override
+  ActiveInferenceMode get activeMode =>
+      primary.isReady ? primary.activeMode : fallback.activeMode;
+
+  @override
   Future<void> warmUp() async {
     try {
       await primary.warmUp();

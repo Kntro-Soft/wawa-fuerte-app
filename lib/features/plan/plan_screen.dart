@@ -17,7 +17,6 @@ import 'package:provider/provider.dart';
 
 import '../../app/route_arguments.dart';
 import '../../app/routes.dart';
-import '../../app/providers.dart';
 import '../../core/inference/inference_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -430,14 +429,18 @@ class _InferenceStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRealModel = gemmaModelPath.isNotEmpty;
-    final isReady = context.watch<InferenceService>().isReady;
+    final inference = context.watch<InferenceService>();
+    final isReady = inference.isReady;
+    final mode = inference.activeMode;
 
-    final (label, color) = isRealModel
-        ? isReady
-              ? ('Gemma', AppColors.success)
-              : ('Cargando...', AppColors.warning)
-        : ('Demo', AppColors.warning);
+    final (label, color) = switch (mode) {
+      ActiveInferenceMode.cloud => ('Nube', AppColors.primary),
+      ActiveInferenceMode.gemma =>
+        isReady
+            ? ('Gemma', AppColors.success)
+            : ('Cargando...', AppColors.warning),
+      ActiveInferenceMode.demo => ('Demo', AppColors.warning),
+    };
 
     return Padding(
       padding: const EdgeInsets.only(right: AppSpacing.md),

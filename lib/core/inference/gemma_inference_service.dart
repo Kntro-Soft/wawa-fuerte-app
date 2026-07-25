@@ -38,6 +38,9 @@ class GemmaInferenceService implements InferenceService {
   bool get isReady => _model != null;
 
   @override
+  ActiveInferenceMode get activeMode => ActiveInferenceMode.gemma;
+
+  @override
   Future<void> warmUp() async {
     if (_model != null) return;
 

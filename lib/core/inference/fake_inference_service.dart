@@ -19,6 +19,9 @@ class FakeInferenceService implements InferenceService {
   bool get isReady => _ready;
 
   @override
+  ActiveInferenceMode get activeMode => ActiveInferenceMode.demo;
+
+  @override
   Future<void> warmUp() async {
     await Future<void>.delayed(latency);
     _ready = true;

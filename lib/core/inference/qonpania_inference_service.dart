@@ -26,6 +26,9 @@ class QonpaniaInferenceService implements InferenceService {
   @override
   bool get isReady => _client.hasSession;
 
+  @override
+  ActiveInferenceMode get activeMode => ActiveInferenceMode.cloud;
+
   /// Opens the session. Cheap next to loading a 557 MB checkpoint, but still
   /// worth doing off the critical path: it turns the first generation from two
   /// round trips into one.

@@ -13,6 +13,9 @@ class _ScriptedInference implements InferenceService {
   bool get isReady => true;
 
   @override
+  ActiveInferenceMode get activeMode => ActiveInferenceMode.demo;
+
+  @override
   Future<void> warmUp() async {}
 
   @override

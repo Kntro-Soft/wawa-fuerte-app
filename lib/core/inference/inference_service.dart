@@ -12,9 +12,27 @@ library;
 import '../domain/child_profile.dart';
 import '../domain/recipe.dart';
 
+/// Identifies which engine is actively serving requests.
+enum ActiveInferenceMode {
+  /// Remote hosted API / Cloud agent (ADR-0015).
+  cloud('Nube'),
+
+  /// On-device Gemma SLM (ADR-0004).
+  gemma('Gemma'),
+
+  /// Canned mock fallback during testing or offline without model weights.
+  demo('Demo');
+
+  const ActiveInferenceMode(this.label);
+  final String label;
+}
+
 abstract interface class InferenceService {
   /// Whether the model is loaded and can serve a request.
   bool get isReady;
+
+  /// The active execution mode (cloud, gemma, or demo).
+  ActiveInferenceMode get activeMode;
 
   /// Loads the model into memory. Slow — call it once, off the critical path.
   Future<void> warmUp();
