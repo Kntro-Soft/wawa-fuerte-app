@@ -143,6 +143,7 @@ class _PlanFormState extends State<_PlanForm> {
           children: [
             for (final ingredient in pantry)
               FoodChip(
+                ingredient: ingredient,
                 label: PantryOptions.label(ingredient),
                 selected: controller.selectedIngredients.contains(ingredient),
                 onTap: () => controller.toggleIngredient(ingredient),

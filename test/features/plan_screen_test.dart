@@ -31,6 +31,10 @@ void main() {
     await tester.tap(find.text('Rosita'));
     await tester.pumpAndSettle();
 
+    // The pantry is fourteen chips deep and each one now carries its drawn
+    // silhouette, so the later ones sit below the fold on a small screen —
+    // exactly as they do for a real user.
+    await scrollTo(tester, find.text('Papa'));
     await tester.tap(find.text('Papa'));
     await tester.pumpAndSettle();
 
@@ -133,6 +137,7 @@ void main() {
 
       expect(cta().onPressed, isNull);
 
+      await scrollTo(tester, find.text('Papa'));
       await tester.tap(find.text('Papa'));
       await tester.pumpAndSettle();
       expect(cta().onPressed, isNull, reason: 'no budget yet');

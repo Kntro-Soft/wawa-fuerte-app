@@ -30,6 +30,7 @@ import '../../core/domain/recipe.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/day_names.dart';
+import '../../core/widgets/food_glyph.dart';
 import '../../core/widgets/listen_button.dart';
 import '../plan/plan_controller.dart';
 
@@ -187,13 +188,10 @@ class _IngredientLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const ExcludeSemantics(
-          child: Icon(
-            LucideIcons.check600,
-            size: AppSpacing.iconSize,
-            color: AppColors.success,
-          ),
-        ),
+        // Was a green check, which is the app's "done" mark and meant nothing
+        // here — an ingredient list is not a list of things achieved. The
+        // silhouette says *which food* instead, in the food's own colour.
+        FoodGlyph(ingredient: ingredient),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Text(
