@@ -24,7 +24,8 @@ import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
 import 'core/rag/fake_recipe_retriever.dart';
-import 'core/storage/in_memory_repositories.dart';
+import 'core/storage/database.dart';
+import 'core/storage/sqlite_repositories.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,8 +40,13 @@ Future<void> main() async {
 
   // Constructed here so startup can read from them before the tree exists, then
   // handed to AppProviders — one instance each, no shadowing (ADR-0009).
-  final profiles = InMemoryProfileRepository();
-  final plans = InMemoryPlanRepository();
+  //
+  // SQLite, not the in-memory fakes: everything a caregiver enters has to
+  // survive closing the app. The whole multi-child model and the weekly
+  // follow-up in Flow D are meaningless if the profiles vanish (ADR-0013).
+  final database = await openAppDatabase();
+  final profiles = SqliteProfileRepository(database);
+  final plans = SqlitePlanRepository(database);
   final retriever = FakeRecipeRetriever();
 
   await retriever.load();
