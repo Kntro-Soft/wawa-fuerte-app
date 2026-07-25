@@ -86,6 +86,12 @@ The remote path is not allowed to be the weak path:
   convenience, not a secret store — a released build has published its key, and
   rotation is a panel operation. A key committed to this repository would be
   worse still, which is why there is no default value anywhere in the source.
+- The APK workflow injects the key from the `QONPANIA_API_KEY` repository
+  secret, so **the uploaded artifact contains an extractable key**. Anyone with
+  read access to the repository, and anyone they hand the `.apk` to, has the
+  credential. With the secret unset the same workflow still builds, and ships
+  the offline APK. The test workflow is deliberately not given the key: the
+  suite must never depend on a network, and `MockClient` covers the client.
 - The release `AndroidManifest.xml` now declares `INTERNET`. It previously did
   not; only the debug and profile manifests did, so this would have worked for
   every developer and failed on the demo handset.

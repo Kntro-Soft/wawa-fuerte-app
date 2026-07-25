@@ -30,12 +30,39 @@ jobs:
 
       - run: flutter pub get
 
+      # Says out loud which of the two builds this is, because the difference is
+      # invisible in the artifact and "why is it not calling the agent" is an
+      # expensive thing to debug on demo day.
+      - name: Report build mode
+        env:
+          QONPANIA_API_KEY: ${{ secrets.QONPANIA_API_KEY }}
+        run: |
+          if [ -n "$QONPANIA_API_KEY" ]; then
+            echo "Hosted nutrition agent: ENABLED (ADR-0015)"
+          else
+            echo "::warning::QONPANIA_API_KEY is not set — building the offline APK. Plans will be generated on-device. Add the secret in Settings → Secrets and variables → Actions."
+          fi
+
       # Release rather than debug: debug-mode Dart is far slower, and the whole
       # point of installing this build is measuring real on-device inference.
       # It is signed with the debug keystore (see android/app/build.gradle.kts),
       # which is fine for sideloading and not fine for Play.
+      #
+      # The key is read from the environment rather than interpolated into the
+      # command, so the expression never becomes part of a logged command line.
+      # An absent secret expands to an empty string, which the app reads as
+      # "not configured" and falls back to on-device generation — the build
+      # still succeeds, it just ships offline.
+      #
+      # ⚠️ The key is compiled into the APK. Anyone who can download this
+      # artifact can extract it (ADR-0015). Rotate it in the Qonpania panel
+      # rather than treating a leaked build as harmless.
       - name: Build APK
-        run: flutter build apk --release
+        env:
+          QONPANIA_API_KEY: ${{ secrets.QONPANIA_API_KEY }}
+        run: |
+          flutter build apk --release \
+            --dart-define=QONPANIA_API_KEY="$QONPANIA_API_KEY"
 
       - name: Report size
         run: ls -lh build/app/outputs/flutter-apk/app-release.apk
