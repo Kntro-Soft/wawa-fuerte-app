@@ -122,14 +122,22 @@ class AppProviders extends StatelessWidget {
   }
 }
 
-/// Path to the Gemma checkpoint, supplied at build time:
+/// Default public URL to download the Gemma .litertlm model when no path is passed at build time.
+const defaultGemmaModelUrl =
+    'https://huggingface.co/litert-community/gemma-2b-it-litertlm/resolve/main/gemma-2b-it-cpu-int4.litertlm';
+
+/// Path or URL to the Gemma checkpoint, supplied at build time:
 ///
 /// ```
-/// flutter run --dart-define=GEMMA_MODEL_PATH=/absolute/path/model.litertlm
+/// flutter run --dart-define=GEMMA_MODEL_PATH=https://.../model.litertlm
 /// ```
 ///
-/// The weights are never committed (ADR-0004), so there is no sensible default.
-const gemmaModelPath = String.fromEnvironment('GEMMA_MODEL_PATH');
+/// Defaults to [defaultGemmaModelUrl] so Android builds automatically download
+/// and cache the weights on first run instead of falling back to FakeInferenceService.
+const gemmaModelPath = String.fromEnvironment(
+  'GEMMA_MODEL_PATH',
+  defaultValue: defaultGemmaModelUrl,
+);
 
 /// Where a plan comes from, and how its text is read back.
 ///
