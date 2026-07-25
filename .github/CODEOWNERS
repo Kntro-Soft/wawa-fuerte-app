@@ -1,25 +1,25 @@
 # CODEOWNERS — file boundaries so that 4 devs working in parallel do not collide.
 # It is here to NOTIFY, not to block (do not enable "require review" in a 6-hour sprint).
 #
-# TODO minute 0: replace @dev1..@dev4 with the real GitHub users.
+# Owners match the team table in README.md. Keep both in sync.
 
-# Fallback
-*                           @dev1
+# Fallback — tech lead
+*                           @jhosepmyr
 
 # P1 — On-device inference engine (Gemma + MediaPipe)
-/lib/core/inference/        @dev1
-/lib/main.dart              @dev1
-/pubspec.yaml               @dev1
-/ios/                       @dev1
+/lib/core/inference/        @sharvel-irigoyen
+/lib/main.dart              @sharvel-irigoyen
+/pubspec.yaml               @sharvel-irigoyen
+/ios/                       @sharvel-irigoyen
 
 # P2 — RAG + nutrition calculation
-/lib/core/rag/              @dev2
-/lib/core/nutrition/        @dev2
+/lib/core/rag/              @jhosepmyr
+/lib/core/nutrition/        @jhosepmyr
 
 # P3 — UI, screens, TTS
-/lib/features/              @dev3
-/lib/core/theme/            @dev3
+/lib/features/              @farioraro
+/lib/core/theme/            @farioraro
 
 # P4 — Data and persistence
-/lib/core/storage/          @dev4
-/assets/data/               @dev4
+/lib/core/storage/          @Eric396
+/assets/data/               @Eric396
