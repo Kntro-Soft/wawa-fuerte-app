@@ -7,6 +7,7 @@
 library;
 
 import '../core/domain/child_profile.dart';
+import '../core/domain/weekly_plan.dart';
 import '../features/plan/plan_controller.dart';
 
 /// Arguments for `Routes.onboarding`: which child is being edited, if any.
@@ -45,4 +46,23 @@ class RecipeArguments {
 
   /// 0 = Monday … 6 = Sunday, matching `PlanDay.dayIndex`.
   final int dayIndex;
+}
+
+
+/// Arguments for `Routes.planHistory`: which child's history to show.
+class PlanHistoryArguments {
+  const PlanHistoryArguments({required this.child});
+
+  final ChildProfile child;
+}
+
+/// Arguments for `Routes.planHistoryDetail`: which saved plan and child to show.
+class PlanHistoryDetailArguments {
+  const PlanHistoryDetailArguments({
+    required this.plan,
+    required this.child,
+  });
+
+  final WeeklyPlan plan;
+  final ChildProfile child;
 }

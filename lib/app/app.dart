@@ -16,6 +16,9 @@ import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_controller.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/recipe/recipe_screen.dart';
+import '../features/plan/plan_history_controller.dart';
+import '../features/plan/plan_history_detail_screen.dart';
+import '../features/plan/plan_history_screen.dart';
 import 'route_arguments.dart';
 import 'routes.dart';
 
@@ -103,6 +106,26 @@ class WawaFuerteApp extends StatelessWidget {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => RecipeScreen(arguments: args),
+        );
+
+      case Routes.planHistory:
+        final args = settings.arguments as PlanHistoryArguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => PlanHistoryController(
+              plans: context.read<PlanRepository>(),
+              child: args.child,
+            ),
+            child: const PlanHistoryScreen(),
+          ),
+        );
+
+      case Routes.planHistoryDetail:
+        final args = settings.arguments as PlanHistoryDetailArguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => PlanHistoryDetailScreen(arguments: args),
         );
 
       default:

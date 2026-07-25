@@ -31,4 +31,10 @@ abstract final class Routes {
   /// One day's recipe: ingredients, steps, and the listen button. Expects a
   /// [RecipeArguments].
   static const String recipe = '/receta';
+
+  /// History of past weekly plans for a child. Expects a [PlanHistoryArguments].
+  static const String planHistory = '/historial';
+
+  /// Detail of a past saved weekly plan. Expects a [PlanHistoryDetailArguments].
+  static const String planHistoryDetail = '/historial-detalle';
 }
