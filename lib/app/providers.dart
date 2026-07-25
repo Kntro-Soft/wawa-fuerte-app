@@ -31,6 +31,7 @@ import '../core/nutrition/table_iron_calculator.dart';
 import '../core/rag/fake_recipe_retriever.dart';
 import '../core/rag/recipe_retriever.dart';
 import '../core/rag/simple_plan_parser.dart';
+import '../core/settings/caregiver_repository.dart';
 import '../core/storage/in_memory_repositories.dart';
 import '../core/storage/repositories.dart';
 import '../features/home/home_controller.dart';
@@ -44,6 +45,7 @@ class AppProviders extends StatelessWidget {
     required this.child,
     this.profiles,
     this.plans,
+    this.caregivers,
     this.retriever,
     this.inference,
     this.parser,
@@ -53,6 +55,7 @@ class AppProviders extends StatelessWidget {
   final Widget child;
   final ProfileRepository? profiles;
   final PlanRepository? plans;
+  final CaregiverRepository? caregivers;
   final RecipeRetriever? retriever;
   final InferenceService? inference;
   final PlanParser? parser;
@@ -61,6 +64,7 @@ class AppProviders extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileRepository = profiles ?? InMemoryProfileRepository();
     final planRepository = plans ?? InMemoryPlanRepository();
+    final caregiverRepository = caregivers ?? InMemoryCaregiverRepository();
     final recipeRetriever = retriever ?? FakeRecipeRetriever();
     final inferenceService = inference ?? defaultInferenceService();
     final planParser = parser ?? const SimplePlanParser();
@@ -71,6 +75,7 @@ class AppProviders extends StatelessWidget {
         // --- Stateless collaborators, constructed once. ---------------------
         Provider<ProfileRepository>.value(value: profileRepository),
         Provider<PlanRepository>.value(value: planRepository),
+        Provider<CaregiverRepository>.value(value: caregiverRepository),
         Provider<RecipeRetriever>.value(value: recipeRetriever),
         Provider<InferenceService>.value(value: inferenceService),
         Provider<PlanParser>.value(value: planParser),
@@ -97,6 +102,7 @@ class AppProviders extends StatelessWidget {
           create: (_) => HomeController(
             profiles: profileRepository,
             plans: planRepository,
+            caregivers: caregiverRepository,
           ),
         ),
       ],
