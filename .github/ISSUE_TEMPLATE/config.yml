@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General team questions
+    url: https://github.com/Kntro-Soft/wawa-fuerte/discussions
+    about: For general questions, use GitHub Discussions instead of an Issue.
+  - name: Getting help / running the app
+    url: https://github.com/Kntro-Soft/wawa-fuerte/blob/main/SUPPORT.md
+    about: Setup, the missing model file, and where to ask — start with SUPPORT.md.
+  - name: Architecture decisions
+    url: https://github.com/Kntro-Soft/wawa-fuerte/tree/main/docs/adr
+    about: Before proposing a change to how the app works, read the ADRs — they are the source of truth.
+  - name: Security or privacy issue
+    url: https://github.com/Kntro-Soft/wawa-fuerte/blob/main/.github/SECURITY.md
+    about: For anything involving health data leaving the device or an exposed secret, follow SECURITY.md — do not open a public Issue.
