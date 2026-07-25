@@ -407,10 +407,7 @@ void main() {
       unawaited(controller.generate());
       await tester.pump();
 
-      expect(
-        find.text('Estamos armando el menú de tu wawa…'),
-        findsOneWidget,
-      );
+      expect(find.text('Estamos armando el menú de tu wawa…'), findsOneWidget);
       expect(find.textContaining('minutito'), findsOneWidget);
 
       // No retry, no cancel, no CTA — nothing to tap that starts a second run.

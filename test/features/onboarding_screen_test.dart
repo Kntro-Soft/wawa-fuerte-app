@@ -96,7 +96,10 @@ void main() {
       await tester.tap(find.text('Sí, lo tengo aquí'));
       await tester.pumpAndSettle();
 
-      await scrollTo(tester, find.text('¿Qué número dice en Hemoglobina? (opcional)'));
+      await scrollTo(
+        tester,
+        find.text('¿Qué número dice en Hemoglobina? (opcional)'),
+      );
       expect(
         find.text('¿Qué número dice en Hemoglobina? (opcional)'),
         findsOneWidget,
@@ -119,7 +122,9 @@ void main() {
       expect(hintFinder, findsOneWidget);
       expect(find.text('11'), findsNothing);
 
-      for (final field in tester.widgetList<TextField>(find.byType(TextField))) {
+      for (final field in tester.widgetList<TextField>(
+        find.byType(TextField),
+      )) {
         expect(
           field.controller?.text ?? '',
           isEmpty,
@@ -196,18 +201,21 @@ void main() {
       }
     });
 
-    test('a saved reading carries its date; a missing one carries none', () async {
-      final withReading = controller()
-        ..setChildName('Rosita')
-        ..setAgeBand(AgeBand.oneYear)
-        ..setRegion(Region.highlands)
-        ..setCredAnswer(CredAnswer.yes)
-        ..setHemoglobinText('10.5');
+    test(
+      'a saved reading carries its date; a missing one carries none',
+      () async {
+        final withReading = controller()
+          ..setChildName('Rosita')
+          ..setAgeBand(AgeBand.oneYear)
+          ..setRegion(Region.highlands)
+          ..setCredAnswer(CredAnswer.yes)
+          ..setHemoglobinText('10.5');
 
-      final saved = await withReading.submit();
-      expect(saved!.hemoglobin, 10.5);
-      expect(saved.hemoglobinDate, isNotNull);
-    });
+        final saved = await withReading.submit();
+        expect(saved!.hemoglobin, 10.5);
+        expect(saved.hemoglobinDate, isNotNull);
+      },
+    );
   });
 
   group('AgeBand', () {

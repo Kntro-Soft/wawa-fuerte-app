@@ -62,20 +62,13 @@ void main() {
         children: [testChild(name: 'Rosita')],
       );
 
-      expect(
-        find.text('Todavía no tiene menú de esta semana'),
-        findsOneWidget,
-      );
+      expect(find.text('Todavía no tiene menú de esta semana'), findsOneWidget);
     });
 
     testWidgets('has no destination-less profile icon in the header', (
       tester,
     ) async {
-      await pumpApp(
-        tester,
-        initialRoute: Routes.home,
-        children: [testChild()],
-      );
+      await pumpApp(tester, initialRoute: Routes.home, children: [testChild()]);
 
       final appBar = find.byType(AppBar);
       expect(appBar, findsOneWidget);
