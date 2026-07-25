@@ -1,7 +1,6 @@
 /// Home screen: the child selector, its empty state, and no dead controls.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wawafuerte/app/routes.dart';
 
