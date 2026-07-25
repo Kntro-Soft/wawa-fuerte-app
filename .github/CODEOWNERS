@@ -7,10 +7,15 @@
 *                           @jhosepmyr
 
 # P1 — On-device inference engine (Gemma + MediaPipe)
+# Android is the primary target (ADR-0003), so the inference owner is an Android dev:
+# real inference can only be validated on a physical handset.
 /lib/core/inference/        @sharvel-irigoyen
 /lib/main.dart              @sharvel-irigoyen
 /pubspec.yaml               @sharvel-irigoyen
-/ios/                       @sharvel-irigoyen
+/android/                   @sharvel-irigoyen
+
+# iOS is a bonus target, not a deliverable (ADR-0003). Only the macOS machine can build it.
+/ios/                       @jhosepmyr
 
 # P2 — RAG + nutrition calculation
 /lib/core/rag/              @jhosepmyr
