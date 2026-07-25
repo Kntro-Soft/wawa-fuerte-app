@@ -29,32 +29,38 @@ class FailingInferenceService implements InferenceService {
 }
 
 void main() {
-  test('HybridInferenceService falls back to secondary when primary fails', () async {
-    final primary = FailingInferenceService();
-    final fallback = FakeInferenceService();
+  test(
+    'HybridInferenceService falls back to secondary when primary fails',
+    () async {
+      final primary = FailingInferenceService();
+      final fallback = FakeInferenceService();
 
-    final hybrid = HybridInferenceService(primary: primary, fallback: fallback);
-    await hybrid.warmUp();
+      final hybrid = HybridInferenceService(
+        primary: primary,
+        fallback: fallback,
+      );
+      await hybrid.warmUp();
 
-    const prompt = PlanPrompt(
-      candidateRecipes: [
-        Recipe(
-          id: 1,
-          name: 'Sangrecita con papa',
-          ingredients: ['sangrecita', 'papa'],
-          preparation: 'Paso 1...',
-          ironMg: 8.5,
-          minAgeMonths: 6,
-          referenceCostPen: 4.5,
-        ),
-      ],
-      ageMonths: 12,
-      region: Region.highlands,
-      availableIngredients: ['sangrecita'],
-      weeklyBudgetPen: 30,
-    );
+      const prompt = PlanPrompt(
+        candidateRecipes: [
+          Recipe(
+            id: 1,
+            name: 'Sangrecita con papa',
+            ingredients: ['sangrecita', 'papa'],
+            preparation: 'Paso 1...',
+            ironMg: 8.5,
+            minAgeMonths: 6,
+            referenceCostPen: 4.5,
+          ),
+        ],
+        ageMonths: 12,
+        region: Region.highlands,
+        availableIngredients: ['sangrecita'],
+        weeklyBudgetPen: 30,
+      );
 
-    final text = await hybrid.generatePlanText(prompt);
-    expect(text, contains('Sangrecita con papa'));
-  });
+      final text = await hybrid.generatePlanText(prompt);
+      expect(text, contains('Sangrecita con papa'));
+    },
+  );
 }

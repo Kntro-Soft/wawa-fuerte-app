@@ -5,10 +5,7 @@ library;
 import 'inference_service.dart';
 
 class HybridInferenceService implements InferenceService {
-  HybridInferenceService({
-    required this.primary,
-    required this.fallback,
-  });
+  HybridInferenceService({required this.primary, required this.fallback});
 
   final InferenceService primary;
   final InferenceService fallback;
