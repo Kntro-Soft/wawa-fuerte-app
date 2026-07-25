@@ -1,6 +1,6 @@
 # 0009. State management library
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-25
 - Deciders: Kntro-Soft team
 
@@ -25,14 +25,42 @@ The candidates:
 
 ## Decision
 
-_To be filled in at sprint start._
+**Provider.**
 
-Recommendation: **Provider**, on the grounds that the deciding factor over six hours is how quickly
-four people converge on one idiom, not how well the architecture ages.
+The deciding factor over a six-hour sprint is not how well an architecture ages — it is how quickly
+four people converge on one idiom. Provider has the smallest API surface of the three, it is what
+every Flutter tutorial the team has already read uses, and a developer who has never seen it can
+read an existing screen and copy its shape without a detour into documentation. Riverpod's
+compile-time safety and Bloc's structure are real advantages that accrue over months; this project
+has hours.
+
+Concretely, the app uses:
+
+- `MultiProvider` at the root of `main.dart` for the dependency graph. Stateless collaborators
+  (`RecipeRetriever`, `InferenceService`, `IronCalculator`, the repositories, `GenerateWeeklyPlan`)
+  are exposed as plain `Provider` values, constructed once at startup.
+- One `ChangeNotifier` per feature, held by a `ChangeNotifierProvider` and named `<Feature>Controller`
+  (`OnboardingController`, `HomeController`, `PlanController`). The controller owns the screen's
+  mutable state and calls into `core`; widgets never call `core` directly.
+- `context.watch<T>()` inside `build`, `context.read<T>()` inside callbacks. No `Consumer` builders
+  unless a rebuild needs to be scoped for performance — one convention, not two.
+
+Controllers expose an explicit status enum rather than a set of loose booleans, because the plan
+screen has a long-running generation state that must be distinguishable from both "idle" and
+"failed" (see the loading requirement in `docs/FLOWS.md`).
 
 ## Consequences
 
-_To be filled in once decided._
-
-Whatever is chosen, one reference implementation is written first by the `core` owner and every
-other feature copies its shape, per the working agreement in `AGENTS.md`.
+- Every feature folder has the same three-file shape — controller, screen, widgets — so a developer
+  moving between folders is never surprised. `PlanController` is the reference implementation; the
+  others copy it.
+- Controllers are plain `ChangeNotifier`s with their dependencies injected through the constructor,
+  so they can be unit-tested with fakes and without a widget tree, which is the main thing Riverpod
+  would otherwise have bought us.
+- Provider resolves by runtime type, so registering two providers of the same type silently shadows
+  one. The dependency graph is therefore assembled in exactly one place (`lib/app/providers.dart`)
+  and nowhere else.
+- `context.read` inside `build` is the classic Provider footgun. The convention above is the
+  mitigation; there is no compiler to enforce it, so it is a review item.
+- If the app outlives the sprint, migrating to Riverpod is mechanical precisely because the state
+  lives in constructor-injected `ChangeNotifier`s rather than in widgets.
