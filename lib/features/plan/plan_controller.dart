@@ -49,14 +49,13 @@ enum PlanStatus {
 
 class PlanController extends ChangeNotifier {
   PlanController({
-    required GenerateWeeklyPlan generatePlan,
-    required PlanRepository plans,
+    required this.generatePlan,
+    required this.plans,
     required this.child,
-  }) : _generatePlan = generatePlan,
-       _plans = plans;
+  });
 
-  final GenerateWeeklyPlan _generatePlan;
-  final PlanRepository _plans;
+  final GenerateWeeklyPlan generatePlan;
+  final PlanRepository plans;
 
   /// The child this plan is for. Fixed for the lifetime of the route.
   final ChildProfile child;
@@ -143,7 +142,7 @@ class PlanController extends ChangeNotifier {
     await _enableWakelock();
 
     try {
-      _plan = await _generatePlan(
+      _plan = await generatePlan(
         child: child,
         availableIngredients: _allIngredients(),
         weeklyBudgetPen: budget!,
@@ -180,7 +179,7 @@ class PlanController extends ChangeNotifier {
     final current = _plan;
     if (current == null) return;
 
-    await _plans.markPrepared(
+    await plans.markPrepared(
       childId: current.childId,
       weekStart: current.weekStart,
       dayIndex: dayIndex,

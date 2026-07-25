@@ -14,14 +14,10 @@ import '../../core/domain/weekly_plan.dart';
 import '../../core/storage/repositories.dart';
 
 class HomeController extends ChangeNotifier {
-  HomeController({
-    required ProfileRepository profiles,
-    required PlanRepository plans,
-  }) : _profiles = profiles,
-       _plans = plans;
+  HomeController({required this.profiles, required this.plans});
 
-  final ProfileRepository _profiles;
-  final PlanRepository _plans;
+  final ProfileRepository profiles;
+  final PlanRepository plans;
 
   List<ChildProfile> _children = const [];
   List<ChildProfile> get children => _children;
@@ -41,14 +37,14 @@ class HomeController extends ChangeNotifier {
     _loading = true;
     notifyListeners();
 
-    _children = await _profiles.findAll();
+    _children = await profiles.findAll();
 
     // Home shows each child's week status inline, so the plans are fetched up
     // front rather than per card. The list is a handful of children on a local
     // database; there is nothing to paginate.
     _latestPlans.clear();
     for (final child in _children) {
-      _latestPlans[child.id] = await _plans.latestFor(child.id);
+      _latestPlans[child.id] = await plans.latestFor(child.id);
     }
 
     _loading = false;

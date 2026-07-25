@@ -40,10 +40,9 @@ enum CredAnswer {
 }
 
 class OnboardingController extends ChangeNotifier {
-  OnboardingController({required ProfileRepository profiles})
-    : _profiles = profiles;
+  OnboardingController({required this.profiles});
 
-  final ProfileRepository _profiles;
+  final ProfileRepository profiles;
 
   // --- Answers. ---------------------------------------------------------------
 
@@ -171,7 +170,7 @@ class OnboardingController extends ChangeNotifier {
         hemoglobinDate: hemoglobin == null ? null : today,
       );
 
-      await _profiles.save(profile);
+      await profiles.save(profile);
       return profile;
     } finally {
       _saving = false;
