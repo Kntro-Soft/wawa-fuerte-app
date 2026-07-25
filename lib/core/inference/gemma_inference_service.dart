@@ -60,20 +60,23 @@ class GemmaInferenceService implements InferenceService {
   }
 
   @override
-  Future<String> generatePlanText(PlanPrompt prompt) async {
+  Future<String> generatePlanText(PlanPrompt prompt) =>
+      generateText(buildPrompt(prompt));
+
+  @override
+  Future<String> generateText(String prompt) async {
     await warmUp();
     final model = _model;
     if (model == null) {
       throw StateError('The model failed to load.');
     }
 
-    // A fresh session per request: the plan is a one-shot generation, and
-    // carrying conversation history would only spend context on nothing.
+    // A fresh session per request: each call here is one-shot, and carrying
+    // conversation history across unrelated requests would only spend context
+    // on nothing.
     final session = await model.createSession();
     try {
-      await session.addQueryChunk(
-        Message.text(text: buildPrompt(prompt), isUser: true),
-      );
+      await session.addQueryChunk(Message.text(text: prompt, isUser: true));
       return await session.getResponse();
     } finally {
       await session.close();

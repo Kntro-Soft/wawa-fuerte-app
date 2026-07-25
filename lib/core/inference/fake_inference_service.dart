@@ -44,6 +44,14 @@ class FakeInferenceService implements InferenceService {
   }
 
   @override
+  Future<String> generateText(String prompt) async {
+    await Future<void>.delayed(latency);
+    // No model to actually reason with here — echo the input back so callers
+    // relying on this in tests get a deterministic, non-empty response.
+    return prompt;
+  }
+
+  @override
   Future<void> dispose() async {
     _ready = false;
   }
