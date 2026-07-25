@@ -14,6 +14,7 @@ import 'package:wawafuerte/app/routes.dart';
 import 'package:wawafuerte/core/domain/child_profile.dart';
 import 'package:wawafuerte/core/inference/fake_inference_service.dart';
 import 'package:wawafuerte/core/rag/fake_recipe_retriever.dart';
+import 'package:wawafuerte/core/settings/caregiver_repository.dart';
 import 'package:wawafuerte/core/storage/in_memory_repositories.dart';
 
 /// Kept as a no-op hook, called from every test file's `setUpAll`.
@@ -31,9 +32,11 @@ Future<TestHarness> pumpApp(
   WidgetTester tester, {
   String initialRoute = Routes.onboarding,
   List<ChildProfile> children = const [],
+  String? caregiverName,
 }) async {
   final profiles = InMemoryProfileRepository(children);
   final plans = InMemoryPlanRepository();
+  final caregivers = InMemoryCaregiverRepository(caregiverName);
   final retriever = FakeRecipeRetriever();
   await retriever.load();
 
@@ -41,6 +44,7 @@ Future<TestHarness> pumpApp(
     AppProviders(
       profiles: profiles,
       plans: plans,
+      caregivers: caregivers,
       retriever: retriever,
       // Zero latency: the tests that care about the generating state drive it
       // explicitly, and the rest should not wait.
@@ -50,14 +54,19 @@ Future<TestHarness> pumpApp(
   );
   await tester.pumpAndSettle();
 
-  return TestHarness(profiles: profiles, plans: plans);
+  return TestHarness(profiles: profiles, plans: plans, caregivers: caregivers);
 }
 
 class TestHarness {
-  const TestHarness({required this.profiles, required this.plans});
+  const TestHarness({
+    required this.profiles,
+    required this.plans,
+    required this.caregivers,
+  });
 
   final InMemoryProfileRepository profiles;
   final InMemoryPlanRepository plans;
+  final InMemoryCaregiverRepository caregivers;
 }
 
 /// A child old enough to have an official iron requirement (ADR-0012).
