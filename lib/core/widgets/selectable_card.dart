@@ -33,11 +33,21 @@ class SelectableCard extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.description,
+    this.leading,
     this.trailing,
     super.key,
   });
 
   final String label;
+
+  /// An optional icon at the head of the card, e.g. the mountains beside
+  /// "Sierra". Unlike [trailing] it is shown in **both** states, because it
+  /// identifies the option rather than reporting anything about it — an icon
+  /// that vanishes on selection would make the selected card look like a
+  /// different card.
+  ///
+  /// It is decorative: [label] always says the same thing in words.
+  final IconData? leading;
 
   /// Optional second line — a plain-language gloss, never a duplicate of
   /// [label].
@@ -86,6 +96,18 @@ class SelectableCard extends StatelessWidget {
             ),
             child: Row(
               children: [
+                if (leading != null) ...[
+                  ExcludeSemantics(
+                    child: Icon(
+                      leading,
+                      size: AppSpacing.actionIconSize,
+                      color: selected
+                          ? AppColors.onPrimaryContainer
+                          : AppColors.earth,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.lg),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

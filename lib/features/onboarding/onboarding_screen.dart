@@ -35,6 +35,7 @@ import '../../app/routes.dart';
 import '../../core/domain/child_profile.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/andean_band.dart';
 import '../../core/widgets/selectable_card.dart';
 import '../../core/widgets/spanish_date.dart';
 import 'age_band.dart';
@@ -93,6 +94,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             if (!editing) ...[
               Text('Wawa Fuerte', style: theme.textTheme.displayLarge),
               const SizedBox(height: AppSpacing.sm),
+              // The one ornamental mark on the screen, under the wordmark.
+              const AndeanBand(),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 'Menús de la semana con hierro, con lo que ya tienes en casa.',
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -148,6 +152,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   for (final entry in _regionLabels.entries) ...[
                     SelectableCard(
                       label: entry.value,
+                      // Coast, highlands and jungle are the one set of options
+                      // here a picture genuinely helps with: the three are told
+                      // apart by landscape long before they are read.
+                      leading: _regionIcons[entry.key],
                       selected: controller.region == entry.key,
                       onTap: () => controller.setRegion(entry.key),
                     ),
@@ -196,6 +204,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   for (final answer in CredAnswer.values) ...[
                     SelectableCard(
                       label: answer.label,
+                      leading: _credIcons[answer],
                       selected: controller.credAnswer == answer,
                       onTap: () => controller.setCredAnswer(answer),
                     ),
@@ -310,6 +319,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Region.coast: 'Costa',
     Region.highlands: 'Sierra',
     Region.jungle: 'Selva',
+  };
+
+  /// Landscape, not flags or crests: what a family sees out of the door.
+  static const Map<Region, IconData> _regionIcons = {
+    Region.coast: LucideIcons.waves600,
+    Region.highlands: LucideIcons.mountain600,
+    Region.jungle: LucideIcons.treePalm600,
+  };
+
+  /// The booklet, the booklet put away, and the honest question mark for
+  /// "no sé qué es eso" — which ADR-0007 requires as a real answer, not as a
+  /// dead end.
+  static const Map<CredAnswer, IconData> _credIcons = {
+    CredAnswer.yes: LucideIcons.notebookPen600,
+    CredAnswer.no: LucideIcons.bookX600,
+    CredAnswer.unknown: LucideIcons.circleQuestionMark600,
   };
 
   static const Map<Sex, String> _sexLabels = {
