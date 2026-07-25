@@ -98,6 +98,42 @@ class SqlitePlanRepository implements PlanRepository {
     );
   }
 
+
+  @override
+  Future<List<WeeklyPlan>> findAllFor(String childId) async {
+    final planRows = await _db.query(
+      tableWeeklyPlans,
+      where: 'child_id = ?',
+      whereArgs: [childId],
+      orderBy: 'week_start DESC',
+    );
+    if (planRows.isEmpty) return const [];
+
+    final result = <WeeklyPlan>[];
+    for (final planRow in planRows) {
+      final weekStart = planRow['week_start']! as String;
+      final dayRows = await _db.query(
+        tablePlanDays,
+        where: 'child_id = ? AND week_start = ?',
+        whereArgs: [childId, weekStart],
+        orderBy: 'day_index ASC',
+      );
+
+      result.add(
+        WeeklyPlan(
+          childId: childId,
+          weekStart: DateTime.parse(weekStart),
+          days: dayRows.map(_planDayFromRow).toList(),
+          coverage: IronCoverage(
+            providedMg: (planRow['provided_mg']! as num).toDouble(),
+            requiredMg: (planRow['required_mg']! as num).toDouble(),
+          ),
+        ),
+      );
+    }
+    return result;
+  }
+
   @override
   Future<void> save(WeeklyPlan plan) async {
     final weekStart = plan.weekStart.toIso8601String();

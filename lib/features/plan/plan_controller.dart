@@ -263,6 +263,67 @@ class PlanController extends ChangeNotifier {
     return {...selectedIngredients, ...extra}.toList();
   }
 
+  // --- Shopping list (computed from the ready plan). --------------------------
+
+  /// All unique ingredient names across all 7 days.
+  List<String> get allPlanIngredients {
+    final current = _plan;
+    if (current == null) return const [];
+    final seen = <String>{};
+    for (final day in current.days) {
+      seen.addAll(day.recipe.ingredients);
+    }
+    return seen.toList()..sort();
+  }
+
+  /// Ingredients from the plan that the family already said they have.
+  ///
+  /// Uses substring matching (same as the retriever) so "hígado de pollo"
+  /// matches if the family tapped "higado de pollo" or wrote "pollo".
+  Set<String> get haveIngredients {
+    final pantry = _allIngredients()
+        .map((i) => i.toLowerCase())
+        .toSet();
+    // Also include items the user flipped manually to "tengo".
+    return allPlanIngredients
+        .where((ing) {
+          final lower = ing.toLowerCase();
+          // Pantry overlap — same logic as InsRecipeRetriever._overlap.
+          final fromPantry = pantry.any(
+            (w) => lower.contains(w) || w.contains(lower),
+          );
+          return fromPantry || _manuallyHave.contains(ing);
+        })
+        .toSet();
+  }
+
+  /// Ingredients the family still needs to buy.
+  Set<String> get toBuyIngredients =>
+      allPlanIngredients.toSet().difference(haveIngredients);
+
+  /// Estimated total cost of the week, in Peruvian soles.
+  ///
+  /// This is a sum of `referenceCostPen` from the INS corpus — always
+  /// an estimate, never a precise figure (ADR-0011).
+  double get estimatedCostPen {
+    final current = _plan;
+    if (current == null) return 0;
+    return current.days.fold(0.0, (sum, d) => sum + d.recipe.referenceCostPen);
+  }
+
+  /// Items the user has manually flipped to "ya lo tengo" from the shopping list.
+  final Set<String> _manuallyHave = {};
+
+  /// Flips an ingredient between "necesito comprar" ↔ "ya lo tengo".
+  void toggleShoppingItem(String ingredient) {
+    if (_manuallyHave.contains(ingredient)) {
+      _manuallyHave.remove(ingredient);
+    } else {
+      _manuallyHave.add(ingredient);
+    }
+    notifyListeners();
+  }
+
   void _enableWakelock() {
     try {
       // Errors are swallowed on both paths: an unsupported platform is not

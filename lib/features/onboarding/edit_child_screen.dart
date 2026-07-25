@@ -35,21 +35,22 @@ import '../../app/routes.dart';
 import '../../core/domain/child_profile.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/andean_band.dart';
+
 import '../../core/widgets/selectable_card.dart';
 import '../../core/widgets/spanish_date.dart';
 import 'age_band.dart';
-import 'onboarding_controller.dart';
+import 'edit_child_controller.dart';
+import 'onboarding_controller.dart' show CredAnswer;
 import 'widgets/question_section.dart';
 
-class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+class EditChildScreen extends StatefulWidget {
+  const EditChildScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  State<EditChildScreen> createState() => _EditChildScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _EditChildScreenState extends State<EditChildScreen> {
   /// Seeded once from the controller so editing opens with the child's name
   /// already in the box. Owned by the state, like the budget field on the plan
   /// form: a controller rebuilt every frame would fight the keyboard.
@@ -64,29 +65,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  TextEditingController _nameField(OnboardingController controller) {
+  TextEditingController _nameField(EditChildController controller) {
     return _name ??= TextEditingController(text: controller.childName);
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<OnboardingController>();
+    final controller = context.watch<EditChildController>();
     final theme = Theme.of(context);
-    final editing = controller.isEditing;
-
     return Scaffold(
-      // Show an AppBar with a back arrow whenever there is something to go back
-      // to — this covers both "Agregar otro niño" (pushed from Home) and the
-      // edit flow. First-run has nothing behind it and shows no bar at all.
-      appBar: (editing || Navigator.canPop(context))
-          ? AppBar(
-              title: Text(
-                editing
-                    ? 'Los datos de ${controller.existing!.name}'
-                    : 'Registrar niña o niño',
-              ),
-            )
-          : null,
+      appBar: AppBar(title: Text('Los datos de ${controller.childName}')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -96,22 +84,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             AppSpacing.xl,
           ),
           children: [
-            // --- Header. No illustration, no photograph, no mascot. ----------
-            if (!editing) ...[
-              Text('Wawa Fuerte', style: theme.textTheme.displayLarge),
-              const SizedBox(height: AppSpacing.sm),
-              // The one ornamental mark on the screen, under the wordmark.
-              const AndeanBand(),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                'Menús de la semana con hierro, con lo que ya tienes en casa.',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-            ],
-
             // --- 1. Name. ----------------------------------------------------
             QuestionSection(
               // No slash: "niña/o" is a reading obstacle for someone who is
@@ -228,7 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 question: '¿Qué número dice en Hemoglobina?',
                 // Never "Hemoglobina (Hb)" and never "g/dL" bare. The help text
                 // tells her where to look, which is the only thing she needs.
-                help: editing && controller.existing!.hasHemoglobin
+                help: controller.child.hasHemoglobin
                     ? 'Si le hicieron un control nuevo, escribe aquí el '
                           'número de ese control. Si lo dejas vacío, se queda '
                           'el que ya teníamos.'
@@ -240,14 +212,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // The reading on file is shown as *text*, never poured into
-                    // the input. See OnboardingController's class doc.
-                    if (editing && controller.existing!.hasHemoglobin) ...[
-                      _StoredReading(child: controller.existing!),
+                    // the input. See EditChildController's class doc.
+                    if (controller.child.hasHemoglobin) ...[
+                      _StoredReading(child: controller.child),
                       const SizedBox(height: AppSpacing.lg),
                     ],
                     TextField(
                       // Never prefilled. The field starts empty and stays empty
-                      // until she types — see OnboardingController.
+                      // until she types — see EditChildController.
                       onChanged: controller.setHemoglobinText,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -270,21 +242,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // --- 7. Caregiver name. Asked once, on the first run only. -------
             //
-            // After that it lives behind the button on the Home header. See
-            // OnboardingController.asksCaregiverName.
-            if (controller.asksCaregiverName) ...[
-              const SizedBox(height: AppSpacing.xxl),
-              QuestionSection(
-                question: '¿Cómo te llamamos?',
-                optional: true,
-                child: TextField(
-                  onChanged: controller.setCaregiverName,
-                  textCapitalization: TextCapitalization.words,
-                  style: theme.textTheme.titleLarge,
-                  decoration: const InputDecoration(hintText: 'Tu nombre'),
-                ),
-              ),
-            ],
+            // Caregiver name is NOT asked here in Edit mode because it's only 
+            // asked once. But wait, since it's Edit mode, we don't ask it at all!
           ],
         ),
       ),
@@ -292,33 +251,69 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // Anchored, not at the end of the scroll: always reachable, never hunted.
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: FilledButton(
-          onPressed: controller.canSubmit && !controller.isSaving
-              ? () => _submit(context)
-              : null,
-          child: Text(editing ? 'Guardar los cambios' : 'Guardar y continuar'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FilledButton(
+              onPressed: controller.canSubmit && !controller.isSaving
+                  ? () => _submit(context)
+                  : null,
+              child: const Text('Guardar los cambios'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextButton(
+              onPressed: () => _delete(controller),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: Text('Eliminar a ${controller.childName}'),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Future<void> _submit(BuildContext context) async {
-    final controller = context.read<OnboardingController>();
+    final controller = context.read<EditChildController>();
     final navigator = Navigator.of(context);
-    final editing = controller.isEditing;
 
     final saved = await controller.submit();
     if (saved == null) return;
 
-    if (editing) {
-      // Editing was pushed from Home, which reloads when this pops.
+    if (mounted) {
       navigator.pop();
-      return;
     }
+  }
 
-    // Registration is reached with nothing worth going back to, so it is
-    // replaced rather than stacked.
-    navigator.pushReplacementNamed(Routes.home);
+  Future<void> _delete(EditChildController controller) async {
+    final name = controller.childName;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('¿Eliminar a $name?'),
+        content: const Text('Se borrarán sus datos y todos sus menús semanales. Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final success = await controller.delete();
+      if (success && mounted) {
+        Navigator.of(context).pushReplacementNamed(Routes.home);
+      }
+    }
   }
 
   static const Map<Region, String> _regionLabels = {

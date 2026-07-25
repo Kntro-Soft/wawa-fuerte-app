@@ -1,7 +1,6 @@
 /// Home screen: the child selector, its empty state, and no dead controls.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wawafuerte/app/routes.dart';
 
@@ -69,17 +68,12 @@ void main() {
       expect(find.text('Todavía no tiene menú de esta semana'), findsOneWidget);
     });
 
-    testWidgets('has a profile icon in the header to change the caregiver name', (
+    testWidgets('has a button in the header to change the caregiver name', (
       tester,
     ) async {
       await pumpApp(tester, initialRoute: Routes.home, children: [testChild()]);
 
-      final appBar = find.byType(AppBar);
-      expect(appBar, findsOneWidget);
-      expect(
-        find.descendant(of: appBar, matching: find.byType(IconButton)),
-        findsOneWidget,
-      );
+      expect(find.text('Poner mi nombre'), findsOneWidget);
     });
 
     testWidgets('tapping a child opens the plan route', (tester) async {

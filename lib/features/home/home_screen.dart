@@ -66,7 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Wawa Fuerte')),
+      appBar: AppBar(
+        title: const Text('Wawa Fuerte'),
+      ),
       body: SafeArea(
         child: controller.isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -125,6 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => Navigator.of(context).pushNamed(
                             Routes.plan,
                             arguments: PlanArguments(child: child),
+                          ),
+                          onHistory: () => Navigator.of(context).pushNamed(
+                            Routes.planHistory,
+                            arguments: PlanHistoryArguments(child: child),
                           ),
                           onEdit: () => _editChild(child),
                           onDelete: () => _deleteChild(child),

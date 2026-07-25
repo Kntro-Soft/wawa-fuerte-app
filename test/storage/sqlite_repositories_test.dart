@@ -195,6 +195,23 @@ void main() {
       },
     );
 
+    test('findAllFor returns all historical plans for a child ordered DESC', () async {
+      final week1 = DateTime(2026, 7, 6);
+      final week2 = DateTime(2026, 7, 13);
+      final week3 = DateTime(2026, 7, 20);
+
+      await plans.save(_plan(childId: 'c1', weekStart: week1));
+      await plans.save(_plan(childId: 'c1', weekStart: week3));
+      await plans.save(_plan(childId: 'c1', weekStart: week2));
+
+      final all = await plans.findAllFor('c1');
+
+      expect(all, hasLength(3));
+      expect(all[0].weekStart, week3);
+      expect(all[1].weekStart, week2);
+      expect(all[2].weekStart, week1);
+    });
+
     test('plans of different children do not mix', () async {
       await profiles.save(_child(id: 'c2', name: 'Mateo'));
       await plans.save(_plan(childId: 'c1', weekStart: weekStart));
