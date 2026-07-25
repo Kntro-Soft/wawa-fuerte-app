@@ -72,55 +72,59 @@ void main() {
       expect(find.textContaining("3 de 7 comidas preparadas"), findsOneWidget);
     });
 
-    testWidgets("tapping a historical plan opens detail screen and recipe modal", (
-      tester,
-    ) async {
-      final child = testChild(id: "child-1", name: "Rosita");
-      final harness = await pumpApp(
-        tester,
-        initialRoute: Routes.home,
-        children: [child],
-      );
+    testWidgets(
+      "tapping a historical plan opens detail screen and recipe modal",
+      (tester) async {
+        final child = testChild(id: "child-1", name: "Rosita");
+        final harness = await pumpApp(
+          tester,
+          initialRoute: Routes.home,
+          children: [child],
+        );
 
-      final pastPlan = WeeklyPlan(
-        childId: child.id,
-        weekStart: DateTime(2026, 7, 13),
-        days: [
-          for (var i = 0; i < 7; i++)
-            PlanDay(
-              dayIndex: i,
-              prepared: i < 2,
-              recipe: Recipe(
-                id: 300 + i,
-                name: "Estofado sangrecita $i",
-                ingredients: const ["sangrecita", "arroz"],
-                preparation: "Paso 1. Freír sangrecita.",
-                ironMg: 4.0,
-                minAgeMonths: 6,
-                referenceCostPen: 3.0,
+        final pastPlan = WeeklyPlan(
+          childId: child.id,
+          weekStart: DateTime(2026, 7, 13),
+          days: [
+            for (var i = 0; i < 7; i++)
+              PlanDay(
+                dayIndex: i,
+                prepared: i < 2,
+                recipe: Recipe(
+                  id: 300 + i,
+                  name: "Estofado sangrecita $i",
+                  ingredients: const ["sangrecita", "arroz"],
+                  preparation: "Paso 1. Freír sangrecita.",
+                  ironMg: 4.0,
+                  minAgeMonths: 6,
+                  referenceCostPen: 3.0,
+                ),
               ),
-            ),
-        ],
-        coverage: const IronCoverage(providedMg: 28, requiredMg: 35),
-      );
+          ],
+          coverage: const IronCoverage(providedMg: 28, requiredMg: 35),
+        );
 
-      await harness.plans.save(pastPlan);
+        await harness.plans.save(pastPlan);
 
-      await tester.tap(find.text("Historial"));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text("Historial"));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.textContaining("80% de hierro cubierto"));
-      await tester.pumpAndSettle();
+        await tester.tap(find.textContaining("80% de hierro cubierto"));
+        await tester.pumpAndSettle();
 
-      expect(find.text("Menú de Rosita"), findsOneWidget);
-      expect(find.textContaining("Se prepararon 2 de 7 comidas"), findsOneWidget);
+        expect(find.text("Menú de Rosita"), findsOneWidget);
+        expect(
+          find.textContaining("Se prepararon 2 de 7 comidas"),
+          findsOneWidget,
+        );
 
-      await scrollTo(tester, find.text("Estofado sangrecita 0"));
-      await tester.tap(find.text("Estofado sangrecita 0"));
-      await tester.pumpAndSettle();
+        await scrollTo(tester, find.text("Estofado sangrecita 0"));
+        await tester.tap(find.text("Estofado sangrecita 0"));
+        await tester.pumpAndSettle();
 
-      expect(find.text("Qué necesitas"), findsOneWidget);
-      expect(find.text("Cómo se prepara"), findsOneWidget);
-    });
+        expect(find.text("Qué necesitas"), findsOneWidget);
+        expect(find.text("Cómo se prepara"), findsOneWidget);
+      },
+    );
   });
 }

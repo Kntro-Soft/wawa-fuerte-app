@@ -40,7 +40,7 @@ class EditChildController extends ChangeNotifier {
 
   bool _saving = false;
   bool get isSaving => _saving;
-  
+
   bool _deleting = false;
   bool get isDeleting => _deleting;
 
@@ -125,13 +125,13 @@ class EditChildController extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<bool> delete() async {
     if (_saving || _deleting) return false;
-    
+
     _deleting = true;
     notifyListeners();
-    
+
     try {
       await profiles.delete(child.id);
       return true;

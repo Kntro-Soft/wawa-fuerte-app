@@ -242,7 +242,7 @@ class _EditChildScreenState extends State<EditChildScreen> {
 
             // --- 7. Caregiver name. Asked once, on the first run only. -------
             //
-            // Caregiver name is NOT asked here in Edit mode because it's only 
+            // Caregiver name is NOT asked here in Edit mode because it's only
             // asked once. But wait, since it's Edit mode, we don't ask it at all!
           ],
         ),
@@ -293,7 +293,9 @@ class _EditChildScreenState extends State<EditChildScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('¿Eliminar a $name?'),
-        content: const Text('Se borrarán sus datos y todos sus menús semanales. Esta acción no se puede deshacer.'),
+        content: const Text(
+          'Se borrarán sus datos y todos sus menús semanales. Esta acción no se puede deshacer.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -301,7 +303,9 @@ class _EditChildScreenState extends State<EditChildScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('Eliminar'),
           ),
         ],

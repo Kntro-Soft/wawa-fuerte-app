@@ -48,9 +48,7 @@ class PlanScreen extends StatelessWidget {
           title: Text(controller.child.name),
           // No back arrow mid-generation, matching PopScope.
           automaticallyImplyLeading: !generating,
-          actions: [
-            if (!generating) const _InferenceStatusChip(),
-          ],
+          actions: [if (!generating) const _InferenceStatusChip()],
         ),
         body: SafeArea(
           child: switch (controller.status) {
@@ -383,10 +381,7 @@ class _PlanResult extends StatelessWidget {
               Routes.planHistory,
               arguments: PlanHistoryArguments(child: controller.child),
             ),
-            icon: const Icon(
-              LucideIcons.history600,
-              size: AppSpacing.iconSize,
-            ),
+            icon: const Icon(LucideIcons.history600, size: AppSpacing.iconSize),
             label: const Text('Ver historial de menús pasados'),
           ),
         ),
@@ -437,17 +432,20 @@ class _InferenceStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRealModel = gemmaModelPath.isNotEmpty;
     final isReady = context.watch<InferenceService>().isReady;
-    
+
     final (label, color) = isRealModel
         ? isReady
-            ? ('Gemma', AppColors.success)
-            : ('Cargando...', AppColors.warning)  
+              ? ('Gemma', AppColors.success)
+              : ('Cargando...', AppColors.warning)
         : ('Demo', AppColors.warning);
-    
+
     return Padding(
       padding: const EdgeInsets.only(right: AppSpacing.md),
       child: Chip(
-        label: Text(label, style: const TextStyle(fontSize: 11, color: Colors.white)),
+        label: Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Colors.white),
+        ),
         backgroundColor: color,
         side: BorderSide.none,
         padding: EdgeInsets.zero,

@@ -26,56 +26,51 @@ class PlanHistoryScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Historial de ${controller.child.name}"),
-      ),
+      appBar: AppBar(title: Text("Historial de ${controller.child.name}")),
       body: SafeArea(
         child: controller.isLoading
             ? const Center(child: CircularProgressIndicator())
             : controller.isEmpty
-                ? EmptyState(
-                    icon: LucideIcons.history600,
-                    title: "Aún no hay historial de menús",
-                    message:
-                        "Aquí se guardarán los menús semanales pasados de "
-                        "${controller.child.name} conforme los vayas generando.",
-                  )
-                : ListView(
-                    padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                    children: [
-                      Text(
-                        "Menús anteriores",
-                        style: theme.textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const AndeanBand(),
-                      const SizedBox(height: AppSpacing.lg),
-                      for (final plan in controller.history)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: _HistoryWeekCard(
+            ? EmptyState(
+                icon: LucideIcons.history600,
+                title: "Aún no hay historial de menús",
+                message:
+                    "Aquí se guardarán los menús semanales pasados de "
+                    "${controller.child.name} conforme los vayas generando.",
+              )
+            : ListView(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                children: [
+                  Text(
+                    "Menús anteriores",
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  const AndeanBand(),
+                  const SizedBox(height: AppSpacing.lg),
+                  for (final plan in controller.history)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _HistoryWeekCard(
+                        plan: plan,
+                        onTap: () => Navigator.of(context).pushNamed(
+                          Routes.planHistoryDetail,
+                          arguments: PlanHistoryDetailArguments(
                             plan: plan,
-                            onTap: () => Navigator.of(context).pushNamed(
-                              Routes.planHistoryDetail,
-                              arguments: PlanHistoryDetailArguments(
-                                plan: plan,
-                                child: controller.child,
-                              ),
-                            ),
+                            child: controller.child,
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                ],
+              ),
       ),
     );
   }
 }
 
 class _HistoryWeekCard extends StatelessWidget {
-  const _HistoryWeekCard({
-    required this.plan,
-    required this.onTap,
-  });
+  const _HistoryWeekCard({required this.plan, required this.onTap});
 
   final WeeklyPlan plan;
   final VoidCallback onTap;

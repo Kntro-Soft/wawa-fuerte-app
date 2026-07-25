@@ -138,8 +138,11 @@ class PlanController extends ChangeNotifier {
   static bool _isThisWeek(WeeklyPlan? plan) {
     if (plan == null) return false;
     final now = DateTime.now();
-    final monday = DateTime(now.year, now.month, now.day)
-        .subtract(Duration(days: now.weekday - 1));
+    final monday = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
     return plan.weekStart.year == monday.year &&
         plan.weekStart.month == monday.month &&
         plan.weekStart.day == monday.day;
@@ -281,20 +284,16 @@ class PlanController extends ChangeNotifier {
   /// Uses substring matching (same as the retriever) so "hígado de pollo"
   /// matches if the family tapped "higado de pollo" or wrote "pollo".
   Set<String> get haveIngredients {
-    final pantry = _allIngredients()
-        .map((i) => i.toLowerCase())
-        .toSet();
+    final pantry = _allIngredients().map((i) => i.toLowerCase()).toSet();
     // Also include items the user flipped manually to "tengo".
-    return allPlanIngredients
-        .where((ing) {
-          final lower = ing.toLowerCase();
-          // Pantry overlap — same logic as InsRecipeRetriever._overlap.
-          final fromPantry = pantry.any(
-            (w) => lower.contains(w) || w.contains(lower),
-          );
-          return fromPantry || _manuallyHave.contains(ing);
-        })
-        .toSet();
+    return allPlanIngredients.where((ing) {
+      final lower = ing.toLowerCase();
+      // Pantry overlap — same logic as InsRecipeRetriever._overlap.
+      final fromPantry = pantry.any(
+        (w) => lower.contains(w) || w.contains(lower),
+      );
+      return fromPantry || _manuallyHave.contains(ing);
+    }).toSet();
   }
 
   /// Ingredients the family still needs to buy.

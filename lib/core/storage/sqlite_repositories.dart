@@ -98,7 +98,6 @@ class SqlitePlanRepository implements PlanRepository {
     );
   }
 
-
   @override
   Future<List<WeeklyPlan>> findAllFor(String childId) async {
     final planRows = await _db.query(

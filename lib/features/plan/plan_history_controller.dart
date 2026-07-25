@@ -10,10 +10,7 @@ import "../../core/domain/weekly_plan.dart";
 import "../../core/storage/repositories.dart";
 
 class PlanHistoryController extends ChangeNotifier {
-  PlanHistoryController({
-    required this.plans,
-    required this.child,
-  }) {
+  PlanHistoryController({required this.plans, required this.child}) {
     load();
   }
 

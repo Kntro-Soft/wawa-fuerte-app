@@ -21,10 +21,7 @@ import "../../core/widgets/spanish_date.dart";
 import "widgets/recipe_row.dart";
 
 class PlanHistoryDetailScreen extends StatelessWidget {
-  const PlanHistoryDetailScreen({
-    required this.arguments,
-    super.key,
-  });
+  const PlanHistoryDetailScreen({required this.arguments, super.key});
 
   final PlanHistoryDetailArguments arguments;
 
@@ -36,17 +33,12 @@ class PlanHistoryDetailScreen extends StatelessWidget {
     final ageMonths = child.ageMonthsAt(plan.weekStart);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Semana del ${spanishDate(plan.weekStart)}"),
-      ),
+      appBar: AppBar(title: Text("Semana del ${spanishDate(plan.weekStart)}")),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
-            Text(
-              "Menú de ${child.name}",
-              style: theme.textTheme.headlineLarge,
-            ),
+            Text("Menú de ${child.name}", style: theme.textTheme.headlineLarge),
             const SizedBox(height: AppSpacing.xs),
             Text(
               "Semana del ${spanishDate(plan.weekStart)}",
@@ -94,7 +86,8 @@ class PlanHistoryDetailScreen extends StatelessWidget {
             for (final day in plan.days) ...[
               RecipeRow(
                 day: day,
-                onTap: () => _showRecipeModal(context, day.recipe, day.dayIndex),
+                onTap: () =>
+                    _showRecipeModal(context, day.recipe, day.dayIndex),
               ),
               const SizedBox(height: AppSpacing.md),
             ],
@@ -109,19 +102,14 @@ class PlanHistoryDetailScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => _HistoricalRecipeModal(
-        recipe: recipe,
-        dayIndex: dayIndex,
-      ),
+      builder: (context) =>
+          _HistoricalRecipeModal(recipe: recipe, dayIndex: dayIndex),
     );
   }
 }
 
 class _HistoricalRecipeModal extends StatefulWidget {
-  const _HistoricalRecipeModal({
-    required this.recipe,
-    required this.dayIndex,
-  });
+  const _HistoricalRecipeModal({required this.recipe, required this.dayIndex});
 
   final Recipe recipe;
   final int dayIndex;
@@ -205,10 +193,7 @@ class _HistoricalRecipeModalState extends State<_HistoricalRecipeModal> {
           ),
           Text(recipe.name, style: theme.textTheme.headlineMedium),
           const SizedBox(height: AppSpacing.lg),
-          ListenButton(
-            isSpeaking: _speaking,
-            onPressed: _toggleSpeech,
-          ),
+          ListenButton(isSpeaking: _speaking, onPressed: _toggleSpeech),
           const SizedBox(height: AppSpacing.xl),
           const SectionHeading(
             icon: LucideIcons.shoppingBasket600,
@@ -243,7 +228,10 @@ class _HistoricalRecipeModalState extends State<_HistoricalRecipeModal> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   alignment: Alignment.center,
                   padding: const EdgeInsets.all(AppSpacing.xs),
                   decoration: BoxDecoration(

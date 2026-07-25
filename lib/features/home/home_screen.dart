@@ -66,9 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wawa Fuerte'),
-      ),
+      appBar: AppBar(title: const Text('Wawa Fuerte')),
       body: SafeArea(
         child: controller.isLoading
             ? const Center(child: CircularProgressIndicator())

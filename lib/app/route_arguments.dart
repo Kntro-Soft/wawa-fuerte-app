@@ -48,7 +48,6 @@ class RecipeArguments {
   final int dayIndex;
 }
 
-
 /// Arguments for `Routes.planHistory`: which child's history to show.
 class PlanHistoryArguments {
   const PlanHistoryArguments({required this.child});
@@ -58,10 +57,7 @@ class PlanHistoryArguments {
 
 /// Arguments for `Routes.planHistoryDetail`: which saved plan and child to show.
 class PlanHistoryDetailArguments {
-  const PlanHistoryDetailArguments({
-    required this.plan,
-    required this.child,
-  });
+  const PlanHistoryDetailArguments({required this.plan, required this.child});
 
   final WeeklyPlan plan;
   final ChildProfile child;
