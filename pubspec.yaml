@@ -83,6 +83,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # The INS corpus the RAG retrieves from (ADR-0005, ADR-0011). Bundled because
+  # the app has no network (ADR-0002). Model weights live in assets/models/,
+  # which is git-ignored and deliberately NOT listed here.
+  assets:
+    - assets/data/
+
   # Lexend, BUNDLED — never fetched.
   #
   # This started as `google_fonts`, which downloads the .ttf at first paint and
