@@ -41,8 +41,12 @@ Add **macOS as a development-only target** so the macOS developer can run the ap
   is inert for everyone else.
 - Desktop window sizing does not reflect a phone screen, so layout judgements made on macOS can
   mislead. Layout is reviewed on Android before it counts.
-- Plugins that lack macOS support (notably `flutter_gemma`, which is Android/iOS only) will not
-  build here. This is why every device-bound dependency sits behind an interface with a fake
-  (ADR-0004) — the macOS target only ever runs the fakes.
+- `flutter_gemma` **does** support macOS desktop, with GPU acceleration through LiteRT-LM. The macOS
+  target is therefore not limited to fakes: real inference can be validated here, which unblocks the
+  macOS developer from depending on an Android handset to see the model work at all. The fakes
+  (ADR-0004) remain the default so that UI work never waits on a multi-gigabyte model download.
+- Because macOS runs the LiteRT-LM backend while Android runs MediaPipe, behaviour verified here is
+  indicative, not conclusive. Prompt output, latency, and memory pressure still have to be measured
+  on the physical Android handset that will run the demo.
 - If the iOS platform is downloaded later, this ADR does not need reversing; the macOS target simply
   becomes redundant.
