@@ -23,6 +23,14 @@
 ///
 /// [PlanStatus.failed] is a real state too, not an exception that escapes into
 /// a red Flutter screen — that is where retry lives.
+///
+/// ## Plan persistence (ADR-0013)
+///
+/// On construction, [PlanController] immediately reads the latest saved plan
+/// for this child from SQLite. If a plan was generated this week, the screen
+/// opens directly in [PlanStatus.ready] — the caregiver never sees the form
+/// again until she explicitly asks for a new menu. The "Generar nuevo menú"
+/// button on the result screen is the only way back to [PlanStatus.editing].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -34,6 +42,9 @@ import '../../core/domain/weekly_plan.dart';
 import '../../core/storage/repositories.dart';
 
 enum PlanStatus {
+  /// Loading the previously saved plan from the database.
+  loading,
+
   /// The form: ingredients and budget.
   editing,
 
@@ -52,7 +63,12 @@ class PlanController extends ChangeNotifier {
     required this.generatePlan,
     required this.plans,
     required this.child,
-  });
+  }) {
+    // Load the existing plan for this week immediately. If one exists the
+    // screen opens in `ready` state and the caregiver skips the form. If none
+    // exists it falls through to `editing` as before (ADR-0013).
+    _loadExistingPlan();
+  }
 
   final GenerateWeeklyPlan generatePlan;
   final PlanRepository plans;
@@ -60,7 +76,7 @@ class PlanController extends ChangeNotifier {
   /// The child this plan is for. Fixed for the lifetime of the route.
   final ChildProfile child;
 
-  PlanStatus _status = PlanStatus.editing;
+  PlanStatus _status = PlanStatus.loading;
   PlanStatus get status => _status;
 
   WeeklyPlan? _plan;
@@ -103,6 +119,31 @@ class PlanController extends ChangeNotifier {
   /// Whether the plan was built without a hemoglobin reading (ADR-0007). Drives
   /// the "standard preventive plan" notice — advice, never an error.
   bool get isPreventivePlan => child.hemoglobin == null;
+
+  // --- Init: load existing plan. ----------------------------------------------
+
+  /// Reads the most recent saved plan for this child. If it belongs to the
+  /// current week the screen shows it directly; otherwise the form is shown.
+  Future<void> _loadExistingPlan() async {
+    final saved = await plans.latestFor(child.id);
+    if (_isThisWeek(saved)) {
+      _plan = saved;
+      _status = PlanStatus.ready;
+    } else {
+      _status = PlanStatus.editing;
+    }
+    notifyListeners();
+  }
+
+  static bool _isThisWeek(WeeklyPlan? plan) {
+    if (plan == null) return false;
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    return plan.weekStart.year == monday.year &&
+        plan.weekStart.month == monday.month &&
+        plan.weekStart.day == monday.day;
+  }
 
   // --- Mutations. -------------------------------------------------------------
 
@@ -169,6 +210,17 @@ class PlanController extends ChangeNotifier {
   /// [PlanStatus.generating].
   void retry() {
     if (_status != PlanStatus.failed) return;
+    _status = PlanStatus.editing;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  /// Returns to the form from a result to allow generating a new plan.
+  ///
+  /// Only available from [PlanStatus.ready]. The caregiver has to explicitly
+  /// ask for a new menu — it never happens by accident.
+  void regenerate() {
+    if (_status != PlanStatus.ready) return;
     _status = PlanStatus.editing;
     _errorMessage = null;
     notifyListeners();

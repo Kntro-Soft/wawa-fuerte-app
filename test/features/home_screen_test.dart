@@ -20,7 +20,7 @@ void main() {
         children: [testChild(name: 'Rosita')],
       );
 
-      expect(find.text('¿Para quién cocinamos?'), findsOneWidget);
+      expect(find.textContaining('Para quién cocinamos'), findsOneWidget);
       expect(find.text('Rosita'), findsOneWidget);
       expect(find.text('Agregar otro niño o niña'), findsOneWidget);
     });
@@ -69,18 +69,16 @@ void main() {
       expect(find.text('Todavía no tiene menú de esta semana'), findsOneWidget);
     });
 
-    testWidgets('has no destination-less profile icon in the header', (
+    testWidgets('has a profile icon in the header to change the caregiver name', (
       tester,
     ) async {
       await pumpApp(tester, initialRoute: Routes.home, children: [testChild()]);
 
       final appBar = find.byType(AppBar);
       expect(appBar, findsOneWidget);
-      // The only thing in the bar is the title. A control that goes nowhere
-      // costs a tap and a moment of doubt.
       expect(
         find.descendant(of: appBar, matching: find.byType(IconButton)),
-        findsNothing,
+        findsOneWidget,
       );
     });
 

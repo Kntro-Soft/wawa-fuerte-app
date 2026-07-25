@@ -49,6 +49,9 @@ class PlanScreen extends StatelessWidget {
         ),
         body: SafeArea(
           child: switch (controller.status) {
+            PlanStatus.loading => const Center(
+              child: CircularProgressIndicator(),
+            ),
             PlanStatus.editing => const _PlanForm(),
             PlanStatus.generating => PlanGeneratingView(
               childName: controller.child.name,
@@ -133,7 +136,7 @@ class _PlanFormState extends State<_PlanForm> {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Toca todo lo que tengas. Puedes tocar varios.',
+          'Toca lo que tienes. El menú usará recetas que incluyan esos ingredientes.',
           style: theme.textTheme.bodyLarge?.copyWith(
             color: AppColors.onSurfaceVariant,
           ),
@@ -350,6 +353,20 @@ class _PlanResult extends StatelessWidget {
               context,
             ).popUntil(ModalRoute.withName(Routes.home)),
             child: const Text('Volver al inicio'),
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // Secondary action: generate a fresh plan for this week. Placed below
+        // "Volver al inicio" so it is reachable but not the obvious next tap.
+        Center(
+          child: TextButton(
+            onPressed: context.read<PlanController>().regenerate,
+            child: Text(
+              'Generar nuevo menú esta semana',
+              style: TextStyle(color: AppColors.onSurfaceVariant),
+            ),
           ),
         ),
       ],
