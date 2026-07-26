@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/domain/generate_weekly_plan.dart';
-import '../core/inference/inference_service.dart';
+import '../core/inference/inference_status.dart';
 import '../core/settings/caregiver_repository.dart';
 import '../core/storage/repositories.dart';
+import '../core/theme/app_spacing.dart';
 import '../core/theme/app_theme.dart';
+import '../core/widgets/inference_status_chip.dart';
 import '../features/home/home_screen.dart';
 import '../features/onboarding/onboarding_controller.dart';
 import '../features/onboarding/onboarding_screen.dart';
@@ -52,7 +54,7 @@ class WawaFuerteApp extends StatelessWidget {
               maxScaleFactor: 1.5,
             ),
           ),
-          child: Consumer<InferenceService>(
+          child: Consumer<InferenceStatus>(
             builder: (context, inference, body) {
               return Stack(
                 children: [
@@ -74,6 +76,29 @@ class WawaFuerteApp extends StatelessWidget {
                         ),
                       ),
                     ),
+                  // Always on top, on every route. Placed under the progress
+                  // bar so the two never overlap while the weights download.
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: inference.isDownloading ? 6 : 2,
+                          right: AppSpacing.sm,
+                        ),
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          // Ignores taps so it can never swallow a press meant
+                          // for whatever the screen puts in that corner.
+                          child: IgnorePointer(
+                            child: InferenceStatusChip(mode: inference.mode),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               );
             },

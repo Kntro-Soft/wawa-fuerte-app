@@ -66,6 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      // No status chip here: it lives in the app shell so it is on every
+      // route, not only on the one screen that happened to draw it.
       appBar: AppBar(title: const Text('Wawa Fuerte')),
       body: SafeArea(
         child: controller.isLoading

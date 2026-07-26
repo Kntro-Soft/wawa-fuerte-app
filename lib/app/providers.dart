@@ -23,8 +23,10 @@ import 'package:provider/provider.dart';
 import '../core/domain/generate_weekly_plan.dart';
 import '../core/inference/fake_inference_service.dart';
 import '../core/inference/gemma_inference_service.dart';
+import '../core/inference/connectivity_monitor.dart';
 import '../core/inference/hybrid_inference_service.dart';
 import '../core/inference/inference_service.dart';
+import '../core/inference/inference_status.dart';
 import '../core/inference/qonpania_inference_service.dart';
 import '../core/nutrition/iron_calculator.dart';
 import '../core/nutrition/table_iron_calculator.dart';
@@ -89,6 +91,11 @@ class AppProviders extends StatelessWidget {
         Provider<CaregiverRepository>.value(value: caregiverRepository),
         Provider<RecipeRetriever>.value(value: recipeRetriever),
         Provider<InferenceService>.value(value: inferenceService),
+        // The listenable view the shell rebuilds on. Always present, whatever
+        // the service is, so the status indicator is never frozen.
+        ChangeNotifierProvider<InferenceStatus>(
+          create: (_) => InferenceStatus(inferenceService),
+        ),
         Provider<PlanParser>.value(value: planParser),
         Provider<IronCalculator>.value(value: calculator),
 
@@ -159,23 +166,30 @@ class PlanPipeline {
 /// The fake stays the default so that `flutter test`, CI, and any developer
 /// with neither a key nor the 557 MB file still get a running app — which is
 /// the whole reason [InferenceService] is an interface (ADR-0004).
-PlanPipeline defaultPlanPipeline({QonpaniaClient? qonpania}) {
+PlanPipeline defaultPlanPipeline({
+  QonpaniaClient? qonpania,
+  ConnectivityMonitor? connectivity,
+}) {
   final localInference = gemmaModelPath.isEmpty
       ? FakeInferenceService()
       : GemmaInferenceService(modelPath: gemmaModelPath);
 
-  if (qonpania != null) {
-    return PlanPipeline(
-      inference: HybridInferenceService(
-        primary: QonpaniaInferenceService(qonpania),
-        fallback: localInference,
-      ),
-      parser: const QonpaniaPlanParser(),
-    );
-  }
-
+  // Always hybrid, even with no hosted key. Two reasons, both learned the hard
+  // way on a real phone:
+  //
+  // 1. It is the only `InferenceService` that is a `ChangeNotifier`, and
+  //    without one the status indicator is computed once and then frozen —
+  //    it kept reading "Nube" after the signal was gone.
+  // 2. It owns the connectivity subscription, so the mode follows the radio
+  //    rather than waiting for a request to fail.
   return PlanPipeline(
-    inference: localInference,
-    parser: const SimplePlanParser(),
+    inference: HybridInferenceService(
+      primary: qonpania == null ? null : QonpaniaInferenceService(qonpania),
+      fallback: localInference,
+      connectivity: connectivity ?? ConnectivityMonitor(),
+    ),
+    parser: qonpania == null
+        ? const SimplePlanParser()
+        : const QonpaniaPlanParser(),
   );
 }
