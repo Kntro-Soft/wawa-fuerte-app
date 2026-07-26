@@ -23,6 +23,7 @@ import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
 import 'app/app.dart';
 import 'app/providers.dart';
 import 'app/routes.dart';
+import 'core/inference/connectivity_monitor.dart';
 import 'core/rag/ins_recipe_retriever.dart';
 import 'core/remote/device_reference.dart';
 import 'core/remote/qonpania_client.dart';
@@ -59,12 +60,19 @@ Future<void> main() async {
   await retriever.load();
   final registered = await profiles.findAll();
 
+  // Started before the pipeline so the very first frame already knows whether
+  // there is signal, rather than defaulting to offline and flickering.
+  final connectivity = ConnectivityMonitor();
+  await connectivity.start();
+
   final pipeline = defaultPlanPipeline(
     qonpania: await _qonpaniaClient(settings, caregivers),
+    connectivity: connectivity,
   );
 
-  // Trigger background model preload/download immediately if connected to internet
-  // so Gemma is fetched automatically on launch.
+  // Fire-and-forget: warming up downloads the weights on first run, and
+  // blocking startup on half a gigabyte would leave a low-end phone on a black
+  // screen. The status indicator reports progress while it happens.
   pipeline.inference.warmUp().ignore();
 
   runApp(
