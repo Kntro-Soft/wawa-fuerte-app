@@ -61,7 +61,6 @@ class GemmaInferenceService implements InferenceService {
       try {
         await FlutterGemma.installModel(
           modelType: ModelType.gemmaIt,
-          fileType: ModelFileType.litertlm,
         ).fromNetwork(modelPath).withProgress((progress) {
           _downloadProgress = progress;
         }).install();
@@ -78,7 +77,6 @@ class GemmaInferenceService implements InferenceService {
 
       await FlutterGemma.installModel(
         modelType: ModelType.gemmaIt,
-        fileType: ModelFileType.litertlm,
       ).fromFile(modelPath).install();
     }
 
